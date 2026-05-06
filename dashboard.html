@@ -97,6 +97,7 @@ input,select,textarea,button{font-size:15px !important}
 <div style="display:flex;background:#fff;border-bottom:1px solid #E0E0E0;position:sticky;top:52px;z-index:9">
   <div id="tab-anken" onclick="switchTab('anken')" style="flex:1;text-align:center;padding:11px;font-size:14px;font-weight:600;color:#1D9E75;border-bottom:2px solid #1D9E75;cursor:pointer">案件管理</div>
   <div id="tab-kyushoku" onclick="switchTab('kyushoku')" style="flex:1;text-align:center;padding:11px;font-size:14px;color:#888;border-bottom:2px solid transparent;cursor:pointer">求職者管理</div>
+  <div id="tab-apps" onclick="switchTab('apps')" style="flex:1;text-align:center;padding:11px;font-size:14px;color:#888;border-bottom:2px solid transparent;cursor:pointer">アプリ</div>
 </div>
 
 <div class="dash" id="dash-content" style="display:none">
@@ -227,6 +228,37 @@ input,select,textarea,button{font-size:15px !important}
   </div>
 
   </div><!-- /section-kyushoku -->
+
+  <div id="section-apps" style="display:none">
+    <div style="padding:8px 0 16px;display:flex;flex-direction:column;gap:12px">
+
+      <div style="font-size:11px;font-weight:600;color:#888;letter-spacing:0.05em;margin-bottom:4px">業務アプリ</div>
+
+      <a href="https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec"
+        target="_blank" style="text-decoration:none">
+        <div style="background:#fff;border:1px solid #E8E8E8;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px">
+          <div style="width:48px;height:48px;border-radius:12px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px">📋</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">日報フォーム</div>
+            <div style="font-size:12px;color:#888">営業記録・案件管理の日報を入力</div>
+          </div>
+          <div style="color:#ccc;font-size:18px">›</div>
+        </div>
+      </a>
+
+      <a href="#" target="_blank" style="text-decoration:none;opacity:0.5;pointer-events:none">
+        <div style="background:#fff;border:1px solid #E8E8E8;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px">
+          <div style="width:48px;height:48px;border-radius:12px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px">👤</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">求人管理アプリ</div>
+            <div style="font-size:12px;color:#888">URL設定後に有効になります</div>
+          </div>
+          <div style="color:#ccc;font-size:18px">›</div>
+        </div>
+      </a>
+
+    </div>
+  </div><!-- /section-apps -->
 </div>
 
 <div class="loading-wrap" id="loading">
@@ -494,29 +526,29 @@ function renderKyushoku(k) {
 }
 
 function switchTab(tab) {
-  var anken    = document.getElementById('section-anken');
-  var kyushoku = document.getElementById('section-kyushoku');
-  var tabAnken    = document.getElementById('tab-anken');
-  var tabKyushoku = document.getElementById('tab-kyushoku');
-
-  if (tab === 'anken') {
-    anken.style.display    = '';
-    kyushoku.style.display = 'none';
-    tabAnken.style.color         = '#1D9E75';
-    tabAnken.style.borderBottom  = '2px solid #1D9E75';
-    tabAnken.style.fontWeight    = '600';
-    tabKyushoku.style.color        = '#888';
-    tabKyushoku.style.borderBottom = '2px solid transparent';
-    tabKyushoku.style.fontWeight   = 'normal';
-  } else {
-    anken.style.display    = 'none';
-    kyushoku.style.display = '';
-    tabKyushoku.style.color        = '#1D9E75';
-    tabKyushoku.style.borderBottom = '2px solid #1D9E75';
-    tabKyushoku.style.fontWeight   = '600';
-    tabAnken.style.color         = '#888';
-    tabAnken.style.borderBottom  = '2px solid transparent';
-    tabAnken.style.fontWeight    = 'normal';
+  var sections = {
+    anken    : document.getElementById('section-anken'),
+    kyushoku : document.getElementById('section-kyushoku'),
+    apps     : document.getElementById('section-apps')
+  };
+  var tabs = {
+    anken    : document.getElementById('tab-anken'),
+    kyushoku : document.getElementById('tab-kyushoku'),
+    apps     : document.getElementById('tab-apps')
+  };
+  // 全て非表示・非アクティブに
+  Object.keys(sections).forEach(function(k) {
+    sections[k].style.display    = 'none';
+    tabs[k].style.color          = '#888';
+    tabs[k].style.borderBottom   = '2px solid transparent';
+    tabs[k].style.fontWeight     = 'normal';
+  });
+  // 選択したタブだけ表示
+  if (sections[tab]) sections[tab].style.display = '';
+  if (tabs[tab]) {
+    tabs[tab].style.color        = '#1D9E75';
+    tabs[tab].style.borderBottom = '2px solid #1D9E75';
+    tabs[tab].style.fontWeight   = '600';
   }
 }
 
