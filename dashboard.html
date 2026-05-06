@@ -269,13 +269,28 @@ function loadDashboard() {
     }
   }
 
-  // GAS APIからfetchで取得
-  fetch(API_URL + '?action=dashboard')
-    .then(function(r) { return r.text(); })
-    .then(function(text) { show(JSON.parse(text)); })
-    .catch(function(e) {
-      loadingEl.innerHTML = '<div class="error-wrap">エラー：' + e.message + '</div>';
-    });
+  // GASのWebアプリはno-corsでは動かないため通常fetchで試みる
+  fetch(API_URL + '?action=dashboard', {
+    method: 'GET',
+    redirect: 'follow',
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.text();
+  })
+  .then(function(text) {
+    show(JSON.parse(text));
+  })
+  .catch(function(e) {
+    // fetchが失敗した場合はJSONPで試みる
+    var script = document.createElement('script');
+    window._dashCallback = function(data) { show(data); document.body.removeChild(script); };
+    script.src = API_URL + '?action=dashboard&callback=_dashCallback';
+    script.onerror = function() {
+      loadingEl.innerHTML = '<div class="error-wrap">接続エラー：' + e.message + '<br>GASのデプロイ設定を確認してください。</div>';
+    };
+    document.body.appendChild(script);
+  });
 }
 
 function renderAll(d) {
