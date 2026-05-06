@@ -4,82 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ダッシュボード</title>
-<script>
-(function(){
-  function fix(){
-    var s=document.createElement('style');
-    s.innerHTML='html{font-size:15px!important;-webkit-text-size-adjust:none!important}body,input,select,button{font-size:15px!important}';
-    document.head.appendChild(s);
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
-  else fix();
-  setTimeout(fix,500);
-  setTimeout(fix,1500);
-})();
-</script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:15px;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:none}
-.header{background:#fff;border-bottom:1px solid #E0E0E0;padding:14px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
-.header-title{font-size:17px;font-weight:600;color:#1A1A1A}
-.header-month{font-size:13px;color:#888;background:#F5F5F5;padding:4px 10px;border-radius:20px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:14px;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:none}
+.header{background:#fff;border-bottom:1px solid #E0E0E0;padding:12px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:17px;font-weight:600}
+.header-month{font-size:12px;color:#888;background:#F5F5F5;padding:3px 10px;border-radius:20px}
 .dash{padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}
-.section-label{font-size:12px;font-weight:500;color:#888;margin-bottom:8px}
+.sec-label{font-size:11px;font-weight:600;color:#888;letter-spacing:0.05em;margin-bottom:6px}
 .metrics-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .metric-card{background:#F5F5F5;border-radius:10px;padding:12px 14px}
 .metric-card.full{grid-column:1/-1}
-.metric-label{font-size:12px;color:#888;margin-bottom:4px}
+.metric-label{font-size:11px;color:#888;margin-bottom:4px}
 .metric-value{font-size:20px;font-weight:600}
 .metric-sub{font-size:11px;color:#888;margin-top:2px}
-.metric-breakdown{display:flex;margin-top:10px;padding-top:10px;border-top:1px solid #E8E8E8}
+.breakdown{display:flex;margin-top:8px;padding-top:8px;border-top:1px solid #E8E8E8}
 .breakdown-item{flex:1}
 .breakdown-item:first-child{border-right:1px solid #E8E8E8;padding-right:10px;margin-right:10px}
-.breakdown-label{font-size:11px;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:4px;font-weight:500}
-.breakdown-label.ko{background:#E1F5EE;color:#085041}
-.breakdown-label.ku{background:#E6F1FB;color:#0C447C}
-.breakdown-value{font-size:16px;font-weight:600;color:#1A1A1A}
-.breakdown-sub{font-size:11px;color:#888;margin-top:2px}
+.bl{font-size:10px;padding:2px 7px;border-radius:20px;display:inline-block;margin-bottom:3px;font-weight:600}
+.bl.ko{background:#E1F5EE;color:#085041}
+.bl.ku{background:#E6F1FB;color:#0C447C}
+.bv{font-size:15px;font-weight:600}
+.bs{font-size:11px;color:#888;margin-top:1px}
 .teal{color:#1D9E75}
 .blue{color:#378ADD}
 .amber{color:#BA7517}
 .card{background:#fff;border:1px solid #E8E8E8;border-radius:12px;padding:14px 16px}
 .chart-wrap{position:relative;width:100%}
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#888}
-.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.period-tabs{display:flex;border-bottom:1px solid #E8E8E8;margin-bottom:12px}
-.period-tab{font-size:13px;padding:8px 14px;border-bottom:2px solid transparent;cursor:pointer;color:#888}
-.period-tab.active{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:600}
-.filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.filter-btn{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid #E0E0E0;background:none;cursor:pointer;color:#888;font-family:inherit}
-.filter-btn.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-.status-grid{display:flex;flex-direction:column;gap:8px}
-.status-row{display:flex;align-items:center;gap:10px}
-.status-bar-wrap{flex:1;background:#F0F0F0;border-radius:4px;height:8px;overflow:hidden}
-.status-bar{height:100%;border-radius:4px;transition:width .4s ease}
-.status-label{font-size:12px;color:#888;width:90px;flex-shrink:0}
-.status-count{font-size:12px;font-weight:600;color:#1A1A1A;min-width:28px;text-align:right}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#888}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+.period-tabs{display:flex;border-bottom:1px solid #E8E8E8;margin-bottom:10px}
+.pt{font-size:13px;padding:7px 14px;border-bottom:2px solid transparent;cursor:pointer;color:#888}
+.pt.active{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:600}
+.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.fb{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid #E0E0E0;background:none;cursor:pointer;color:#888;font-family:inherit}
+.fb.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.status-grid{display:flex;flex-direction:column;gap:7px}
+.status-row{display:flex;align-items:center;gap:8px}
+.status-label{font-size:11px;color:#888;width:88px;flex-shrink:0}
+.status-bar-wrap{flex:1;background:#F0F0F0;border-radius:4px;height:7px;overflow:hidden}
+.status-bar{height:100%;border-radius:4px}
+.status-count{font-size:11px;font-weight:600;min-width:26px;text-align:right}
 .pipeline-list{display:flex;flex-direction:column;gap:8px}
-.pipeline-item{background:#F9F9F9;border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px}
-.pipeline-name{font-size:14px;font-weight:600;color:#1A1A1A}
+.pipeline-item{background:#F9F9F9;border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px}
+.pipeline-name{font-size:13px;font-weight:600}
 .pipeline-meta{font-size:11px;color:#888;margin-top:2px}
-.pipeline-amount{font-size:14px;font-weight:600;color:#1D9E75;text-align:right;white-space:nowrap}
-.pipeline-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;margin-top:3px;display:inline-block}
+.pipeline-amount{font-size:13px;font-weight:600;color:#1D9E75;text-align:right;white-space:nowrap}
+.pbadge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;margin-top:3px;display:inline-block}
 .badge-sodan{background:#E6F1FB;color:#0C447C}
 .badge-kaishi{background:#E1F5EE;color:#085041}
 .badge-chosei{background:#FAEEDA;color:#633806}
 .badge-end{background:#F0F0F0;color:#555}
 .nippou-list{display:flex;flex-direction:column}
-.nippou-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F0F0F0}
+.nippou-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F0F0}
 .nippou-row:last-child{border-bottom:none}
-.nippou-name{font-size:14px;color:#1A1A1A}
+.nippou-name{font-size:13px}
 .nippou-sub{font-size:11px;color:#888;margin-top:1px}
-.nippou-count{font-size:15px;font-weight:600;color:#1D9E75}
+.nippou-count{font-size:14px;font-weight:600;color:#1D9E75}
 .loading-wrap{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50}
-.loading-spinner{width:40px;height:40px;border:3px solid #E0E0E0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
+.loading-spinner{width:36px;height:36px;border:3px solid #E0E0E0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-size:15px;color:#888}
-.error-wrap{text-align:center;padding:40px 20px;color:#888;font-size:14px}
+.loading-txt{font-size:14px;color:#888}
+.error-wrap{text-align:center;padding:40px 20px;color:#888;font-size:14px;line-height:1.8}
 </style>
 </head>
 <body>
@@ -91,7 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 
 <div class="dash" id="dash-content" style="display:none">
 
-  <div class="section-label" id="summary-label">サマリー</div>
+  <div class="sec-label" id="summary-label">サマリー</div>
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-label">今月の営業回数</div>
@@ -106,102 +93,86 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
     <div class="metric-card full">
       <div class="metric-label">月次売上予想（サービス開始案件）</div>
       <div class="metric-value teal" id="s-sales-total">—</div>
-      <div class="metric-breakdown">
-        <div class="breakdown-item">
-          <span class="breakdown-label ko">越谷</span>
-          <div class="breakdown-value" id="s-sales-ko">—</div>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-label ku">熊谷</span>
-          <div class="breakdown-value" id="s-sales-ku">—</div>
-        </div>
+      <div class="breakdown">
+        <div class="breakdown-item"><span class="bl ko">越谷</span><div class="bv" id="s-sales-ko">—</div></div>
+        <div class="breakdown-item"><span class="bl ku">熊谷</span><div class="bv" id="s-sales-ku">—</div></div>
       </div>
     </div>
     <div class="metric-card full">
       <div class="metric-label">パイプライン概算（調整中案件）</div>
       <div class="metric-value amber" id="s-pipeline-total">—</div>
-      <div class="metric-breakdown">
-        <div class="breakdown-item">
-          <span class="breakdown-label ko">越谷</span>
-          <div class="breakdown-value" id="s-pipeline-ko">—</div>
-          <div class="breakdown-sub" id="s-pipeline-ko-sub"></div>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-label ku">熊谷</span>
-          <div class="breakdown-value" id="s-pipeline-ku">—</div>
-          <div class="breakdown-sub" id="s-pipeline-ku-sub"></div>
-        </div>
+      <div class="breakdown">
+        <div class="breakdown-item"><span class="bl ko">越谷</span><div class="bv" id="s-pipeline-ko">—</div><div class="bs" id="s-pipeline-ko-sub"></div></div>
+        <div class="breakdown-item"><span class="bl ku">熊谷</span><div class="bv" id="s-pipeline-ku">—</div><div class="bs" id="s-pipeline-ku-sub"></div></div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-label">営業回数推移</div>
+    <div class="sec-label">営業回数推移</div>
     <div class="period-tabs">
-      <div class="period-tab active" onclick="switchPeriod(this,'monthly')">月次</div>
-      <div class="period-tab" onclick="switchPeriod(this,'weekly')">週次</div>
+      <div class="pt active" onclick="switchPeriod(this,'monthly')">月次</div>
+      <div class="pt" onclick="switchPeriod(this,'weekly')">週次</div>
     </div>
     <div class="legend">
-      <span class="leg-item"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
-      <span class="leg-item"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
+      <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
+      <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
     </div>
-    <div class="chart-wrap" style="height:180px"><canvas id="chart-trend" role="img" aria-label="営業回数推移グラフ"></canvas></div>
+    <div class="chart-wrap" style="height:160px"><canvas id="chart-trend"></canvas></div>
   </div>
 
   <div class="card">
-    <div class="section-label">担当者別営業回数（今月）</div>
-    <div class="chart-wrap" id="staff-chart-wrap" style="height:160px"><canvas id="chart-staff" role="img" aria-label="担当者別営業回数"></canvas></div>
+    <div class="sec-label">担当者別営業回数（今月）</div>
+    <div class="chart-wrap" id="staff-wrap" style="height:140px"><canvas id="chart-staff"></canvas></div>
   </div>
 
   <div class="card">
-    <div class="section-label">案件ステータス別件数</div>
-    <div class="filter-row">
-      <button class="filter-btn active" onclick="switchStatus(this,'both')">両事業所</button>
-      <button class="filter-btn" onclick="switchStatus(this,'越谷')">越谷</button>
-      <button class="filter-btn" onclick="switchStatus(this,'熊谷')">熊谷</button>
+    <div class="sec-label">案件ステータス別件数</div>
+    <div class="filter-row" id="status-filter-row">
+      <button class="fb active" onclick="switchStatus(this,'both')">両事業所</button>
+      <button class="fb" onclick="switchStatus(this,'越谷')">越谷</button>
+      <button class="fb" onclick="switchStatus(this,'熊谷')">熊谷</button>
     </div>
     <div class="status-grid" id="status-grid"></div>
   </div>
 
   <div class="card">
-    <div class="section-label">パイプライン — 調整中案件明細</div>
+    <div class="sec-label">パイプライン — 調整中案件</div>
     <div class="pipeline-list" id="pipeline-list"></div>
   </div>
 
   <div class="card">
-    <div class="section-label">利用者別売上</div>
-    <div class="filter-row" id="user-jigyo-filters">
-      <button class="filter-btn active" onclick="switchUserJigyo(this,'all')">全事業所</button>
-      <button class="filter-btn" onclick="switchUserJigyo(this,'越谷')">越谷</button>
-      <button class="filter-btn" onclick="switchUserJigyo(this,'熊谷')">熊谷</button>
+    <div class="sec-label">利用者別売上（全ステータス）</div>
+    <div class="filter-row" id="user-jigyo-filter-row">
+      <button class="fb active" onclick="switchUserJigyo(this,'all')">全事業所</button>
+      <button class="fb" onclick="switchUserJigyo(this,'越谷')">越谷</button>
+      <button class="fb" onclick="switchUserJigyo(this,'熊谷')">熊谷</button>
     </div>
-    <div class="filter-row" id="user-status-filters">
-      <button class="filter-btn active" onclick="switchUserStatus(this,'all')">全ステータス</button>
-      <button class="filter-btn" onclick="switchUserStatus(this,'サービス開始')">開始</button>
-      <button class="filter-btn" onclick="switchUserStatus(this,'サービス相談')">相談</button>
-      <button class="filter-btn" onclick="switchUserStatus(this,'不成立')">不成立</button>
-      <button class="filter-btn" onclick="switchUserStatus(this,'契約終了')">終了</button>
+    <div class="filter-row" id="user-status-filter-row">
+      <button class="fb active" onclick="switchUserStatus(this,'all')">全ステータス</button>
+      <button class="fb" onclick="switchUserStatus(this,'サービス開始')">開始</button>
+      <button class="fb" onclick="switchUserStatus(this,'サービス相談')">相談</button>
+      <button class="fb" onclick="switchUserStatus(this,'不成立')">不成立</button>
+      <button class="fb" onclick="switchUserStatus(this,'契約終了')">終了</button>
     </div>
-    <div class="chart-wrap" id="user-chart-wrap" style="height:220px">
-      <canvas id="chart-users" role="img" aria-label="利用者別売上グラフ"></canvas>
-    </div>
+    <div class="chart-wrap" id="user-wrap" style="height:200px"><canvas id="chart-users"></canvas></div>
   </div>
 
   <div class="card">
-    <div class="section-label">利用者数の月次推移</div>
+    <div class="sec-label">利用者数の月次推移</div>
     <div class="legend">
-      <span class="leg-item"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
-      <span class="leg-item"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
+      <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
+      <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
     </div>
-    <div class="chart-wrap" style="height:160px"><canvas id="chart-user-trend" role="img" aria-label="利用者数月次推移グラフ"></canvas></div>
+    <div class="chart-wrap" style="height:140px"><canvas id="chart-user-trend"></canvas></div>
   </div>
 
   <div class="card">
-    <div class="section-label">日報提出状況（今月）</div>
+    <div class="sec-label">日報提出状況（今月）</div>
     <div class="nippou-list" id="nippou-list"></div>
   </div>
 
-  <div class="section-label" style="margin-top:4px">求職者管理</div>
+  <div class="sec-label" style="margin-top:4px">求職者管理</div>
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-label">累計求職者数</div>
@@ -211,7 +182,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
     <div class="metric-card">
       <div class="metric-label">今月の応募数</div>
       <div class="metric-value blue" id="k-oubo">—</div>
-      <div class="metric-sub" id="k-oubo-sub">今月</div>
     </div>
     <div class="metric-card full">
       <div class="metric-label">今月の採用数</div>
@@ -220,195 +190,281 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
   </div>
 
   <div class="card">
-    <div class="section-label">選考ステータス別件数</div>
+    <div class="sec-label">選考ステータス別件数</div>
     <div class="status-grid" id="kyushoku-status-grid"></div>
   </div>
 
   <div class="card">
-    <div class="section-label">月次応募数推移</div>
-    <div class="chart-wrap" style="height:160px">
-      <canvas id="chart-oubo-trend" role="img" aria-label="月次応募数推移グラフ"></canvas>
-    </div>
+    <div class="sec-label">月次応募数推移</div>
+    <div class="chart-wrap" style="height:140px"><canvas id="chart-oubo-trend"></canvas></div>
   </div>
 
 </div>
 
 <div class="loading-wrap" id="loading">
   <div class="loading-spinner"></div>
-  <div class="loading-txt" id="loading-txt">データを読み込んでいます...</div>
+  <div class="loading-txt">データを読み込んでいます...</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// ============================================================
-// 設定：GAS APIのURLをここに設定
-// ============================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec';
-
-const TEAL='#1D9E75', BLUE='#378ADD', AMBER='#BA7517', RED='#E24B4A', GRAY='#888780';
-const gridColor='rgba(120,120,120,0.1)', tickColor='#888';
-const STATUS_COLORS = {'サービス相談':BLUE,'サービス開始':TEAL,'不成立':RED,'契約終了':GRAY,'調整中':AMBER};
-const STATUS_BADGE  = {'サービス相談':'badge-sodan','サービス開始':'badge-kaishi','調整中':'badge-chosei','契約終了':'badge-end','不成立':'badge-end'};
-
-let dashData = null;
-let trendChart = null, staffChart = null, userChart = null, userTrendChart = null;
+var API_URL = 'https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec';
+var TEAL='#1D9E75', BLUE='#378ADD', AMBER='#BA7517', RED='#E24B4A', GRAY='#888780';
+var gridColor='rgba(120,120,120,0.1)', tickColor='#888';
+var STATUS_COLORS={'サービス相談':BLUE,'サービス開始':TEAL,'不成立':RED,'契約終了':GRAY,'調整中':AMBER};
+var STATUS_BADGE={'サービス相談':'badge-sodan','サービス開始':'badge-kaishi','調整中':'badge-chosei','契約終了':'badge-end','不成立':'badge-end'};
+var dashData=null;
+var trendChart=null, staffChart=null, userChart=null, userTrendChart=null, ouboChart=null;
+var userJigyoFilter='all', userStatusFilter='all';
 
 function loadDashboard() {
-  var loadingEl = document.getElementById('loading');
-
-  function show(data) {
+  var cbName = '_cb' + Date.now();
+  window[cbName] = function(b64) {
     try {
-      // Base64でエンコードされている場合はデコード
-      var parsed;
-      if (typeof data === 'string') {
-        try {
-          var decoded = atob(data);
-          var utf8 = decodeURIComponent(escape(decoded));
-          parsed = JSON.parse(utf8);
-        } catch(e) {
-          parsed = JSON.parse(data);
-        }
-      } else {
-        parsed = data;
-      }
-      if (parsed.error) throw new Error(parsed.error);
-      dashData = parsed;
-      renderAll(parsed);
-      loadingEl.style.display = 'none';
-      document.getElementById('dash-content').style.display = 'flex';
+      var dec = atob(b64);
+      var utf8 = decodeURIComponent(escape(dec));
+      dashData = JSON.parse(utf8);
+      renderAll(dashData);
+      document.getElementById('loading').style.display='none';
+      document.getElementById('dash-content').style.display='flex';
     } catch(e) {
-      loadingEl.innerHTML = '<div class="error-wrap">表示エラー：' + e.message + '</div>';
+      document.getElementById('loading').innerHTML='<div class="error-wrap">表示エラー：'+e.message+'</div>';
     }
-  }
-
-  // JSONPでBase64エンコードされたデータを取得
-  var script = document.createElement('script');
-  var cbName = '_dashCb' + Date.now();
-  window[cbName] = function(data) {
-    show(data);
     delete window[cbName];
-    if (script.parentNode) script.parentNode.removeChild(script);
+    if (s && s.parentNode) s.parentNode.removeChild(s);
   };
-  script.onerror = function() {
-    loadingEl.innerHTML = '<div class="error-wrap">接続エラー。再読み込みしてください。</div>';
-    delete window[cbName];
+  var s = document.createElement('script');
+  s.onerror = function() {
+    document.getElementById('loading').innerHTML='<div class="error-wrap">接続エラー。再読み込みしてください。</div>';
   };
-  script.src = API_URL + '?action=dashboard&callback=' + cbName;
-  document.body.appendChild(script);
+  s.src = API_URL+'?action=dashboard&callback='+cbName;
+  document.body.appendChild(s);
 }
 
 function renderAll(d) {
-  // ヘッダー
-  document.getElementById('header-month').textContent = d.year + '年' + d.month;
-  document.getElementById('summary-label').textContent = 'サマリー — ' + d.year + '年' + d.month;
-
-  // サマリー
-  const s = d.summary;
-  document.getElementById('s-eigyo-total').textContent = s.eigyo.total + '回';
-  document.getElementById('s-eigyo-sub').textContent   = '越谷 ' + s.eigyo.ko + ' ／ 熊谷 ' + s.eigyo.ku;
-  document.getElementById('s-users-total').textContent = s.users.total + '名';
-  document.getElementById('s-users-sub').textContent   = '越谷 ' + s.users.ko + ' ／ 熊谷 ' + s.users.ku;
-  document.getElementById('s-sales-total').textContent = s.sales.total + '万円';
-  document.getElementById('s-sales-ko').textContent    = s.sales.ko + '万円';
-  document.getElementById('s-sales-ku').textContent    = s.sales.ku + '万円';
-  document.getElementById('s-pipeline-total').textContent = s.pipeline.total + '万円';
-  document.getElementById('s-pipeline-ko').textContent    = s.pipeline.ko + '万円';
-  document.getElementById('s-pipeline-ku').textContent    = s.pipeline.ku + '万円';
-
-  // パイプライン件数サブテキスト
-  const koCount = d.pipelineItems.filter(p => p.jigyosho === '越谷').length;
-  const kuCount = d.pipelineItems.filter(p => p.jigyosho === '熊谷').length;
-  document.getElementById('s-pipeline-ko-sub').textContent = koCount + '件';
-  document.getElementById('s-pipeline-ku-sub').textContent = kuCount + '件';
-
-  // 営業推移グラフ
+  var s = d.summary;
+  document.getElementById('header-month').textContent = d.year+'年'+d.month;
+  document.getElementById('summary-label').textContent = 'サマリー — '+d.year+'年'+d.month;
+  document.getElementById('s-eigyo-total').textContent = s.eigyo.total+'回';
+  document.getElementById('s-eigyo-sub').textContent = '越谷 '+s.eigyo.ko+' ／ 熊谷 '+s.eigyo.ku;
+  document.getElementById('s-users-total').textContent = s.users.total+'名';
+  document.getElementById('s-users-sub').textContent = '越谷 '+s.users.ko+' ／ 熊谷 '+s.users.ku;
+  document.getElementById('s-sales-total').textContent = s.sales.total+'万円';
+  document.getElementById('s-sales-ko').textContent = s.sales.ko+'万円';
+  document.getElementById('s-sales-ku').textContent = s.sales.ku+'万円';
+  document.getElementById('s-pipeline-total').textContent = s.pipeline.total+'万円';
+  document.getElementById('s-pipeline-ko').textContent = s.pipeline.ko+'万円';
+  document.getElementById('s-pipeline-ku').textContent = s.pipeline.ku+'万円';
+  var koC=0, kuC=0;
+  d.pipelineItems.forEach(function(p){ if(p.jigyosho==='越谷') koC++; else kuC++; });
+  document.getElementById('s-pipeline-ko-sub').textContent = koC+'件';
+  document.getElementById('s-pipeline-ku-sub').textContent = kuC+'件';
   buildTrendChart(d.trendMonthly);
-
-  // 担当者別
   buildStaffChart(d.staffRanking);
-
-  // ステータス
   renderStatus('both');
-
-  // パイプライン明細
   renderPipeline(d.pipelineItems);
-
-  // 利用者別売上
   buildUserChart('all','all');
-
-  // 利用者数推移
   buildUserTrendChart(d.userTrend);
-
-  // 日報
   renderNippou(d.nippouStatus);
   renderKyushoku(d.kyushoku);
 }
 
-// ── 営業推移グラフ ──
 function buildTrendChart(data) {
   if (trendChart) trendChart.destroy();
   trendChart = new Chart(document.getElementById('chart-trend'), {
-    type: 'bar',
-    data: {
-      labels: data.map(d => d.label),
-      datasets: [
-        {label:'越谷', data:data.map(d=>d.ko), backgroundColor:TEAL, borderRadius:3},
-        {label:'熊谷', data:data.map(d=>d.ku), backgroundColor:BLUE, borderRadius:3},
+    type:'bar',
+    data:{
+      labels:data.map(function(d){return d.label;}),
+      datasets:[
+        {label:'越谷',data:data.map(function(d){return d.ko;}),backgroundColor:TEAL,borderRadius:3},
+        {label:'熊谷',data:data.map(function(d){return d.ku;}),backgroundColor:BLUE,borderRadius:3}
       ]
     },
-    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:11},color:tickColor}},
-              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:11},color:tickColor}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor}}}}
   });
 }
 
-// 週次データはダミー（GAS連携後に実データに差し替え可）
 function switchPeriod(el, type) {
-  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pt').forEach(function(t){t.classList.remove('active');});
   el.classList.add('active');
-  if (type === 'monthly' && dashData) buildTrendChart(dashData.trendMonthly);
-  // 週次はGAS拡張時に対応
+  if (type==='monthly' && dashData) buildTrendChart(dashData.trendMonthly);
 }
 
-// ── 担当者別グラフ ──
 function buildStaffChart(data) {
-  const h = Math.max(data.length * 40 + 60, 120);
-  document.getElementById('staff-chart-wrap').style.height = h + 'px';
+  var h = Math.max(data.length*36+40,100);
+  document.getElementById('staff-wrap').style.height = h+'px';
   if (staffChart) staffChart.destroy();
   staffChart = new Chart(document.getElementById('chart-staff'), {
-    type: 'bar',
-    data: {
-      labels: data.map(d => d.name),
-      datasets: [{
-        data: data.map(d => d.count),
-        backgroundColor: data.map(d => d.jigyosho === '越谷' ? TEAL : BLUE),
-        borderRadius: 3
+    type:'bar',
+    data:{
+      labels:data.map(function(d){return d.name;}),
+      datasets:[{
+        data:data.map(function(d){return d.count;}),
+        backgroundColor:data.map(function(d){return d.jigyosho==='越谷'?TEAL:BLUE;}),
+        borderRadius:3
       }]
     },
-    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       indexAxis:'y',
-      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:11},color:tickColor}},
-              y:{grid:{display:false},ticks:{font:{size:11},color:tickColor}}}}
+      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor}},
+              y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
   });
 }
 
-// ── ステータス別 ──
 function renderStatus(key) {
   if (!dashData) return;
-  const d = dashData.statusCounts[key] || dashData.statusCounts['both'];
-  const statusList = ['サービス相談','サービス開始','不成立','契約終了'];
-  const total = statusList.reduce((s,k) => s+(d[k]||0), 0) || 1;
-  document.getElementById('status-grid').innerHTML = statusList.map(function(s) {
-      var w = Math.round((d[s]||0)/total*100);
-      return '<div class="status-row">' +
-        '<div class="status-label">' + s + '</div>' +
-        '<div class="status-bar-wrap"><div class="status-bar" style="width:' + w + '%;background:' + STATUS_COLORS[s] + '"></div></div>' +
-        '<div class="status-count">' + (d[s]||0) + '件</div>' +
-      '</div>';
-    }).join('');
+  var d = dashData.statusCounts[key] || dashData.statusCounts['both'];
+  var list = ['サービス相談','サービス開始','不成立','契約終了'];
+  var total=0;
+  list.forEach(function(s){total+=(d[s]||0);});
+  if(!total) total=1;
+  var html='';
+  list.forEach(function(s){
+    var w=Math.round((d[s]||0)/total*100);
+    html+='<div class="status-row">'+
+      '<div class="status-label">'+s+'</div>'+
+      '<div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+STATUS_COLORS[s]+'"></div></div>'+
+      '<div class="status-count">'+(d[s]||0)+'件</div>'+
+    '</div>';
+  });
+  document.getElementById('status-grid').innerHTML=html;
 }
 
-// 起動
+function switchStatus(el, key) {
+  document.getElementById('status-filter-row').querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  renderStatus(key);
+}
+
+function renderPipeline(items) {
+  var el = document.getElementById('pipeline-list');
+  if (!items||!items.length) {
+    el.innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:12px">調整中の案件はありません</div>';
+    return;
+  }
+  var html='';
+  items.forEach(function(p){
+    var badge=STATUS_BADGE[p.status]||'badge-end';
+    html+='<div class="pipeline-item">'+
+      '<div style="flex:1">'+
+        '<div class="pipeline-name">'+p.name+' 様</div>'+
+        '<div class="pipeline-meta">'+p.jigyosho+' ／ '+(p.service||'重度訪問介護')+' ／ '+p.hours+'h</div>'+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0">'+
+        '<div class="pipeline-amount">'+p.amount+'万円</div>'+
+        '<span class="pbadge '+badge+'">'+p.status+'</span>'+
+      '</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+
+function buildUserChart(jigyo, status) {
+  if (!dashData) return;
+  var filtered=dashData.userSales.filter(function(u){
+    if(jigyo!=='all'&&u.jigyosho!==jigyo) return false;
+    if(status!=='all'&&u.status!==status) return false;
+    return true;
+  });
+  var h=Math.max(filtered.length*40+50,100);
+  document.getElementById('user-wrap').style.height=h+'px';
+  if(userChart) userChart.destroy();
+  userChart=new Chart(document.getElementById('chart-users'),{
+    type:'bar',
+    data:{
+      labels:filtered.map(function(u){return u.name;}),
+      datasets:[{
+        data:filtered.map(function(u){return u.amount;}),
+        backgroundColor:filtered.map(function(u){return STATUS_COLORS[u.status]||GRAY;}),
+        borderRadius:3
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.raw+'万円';}}}},
+      indexAxis:'y',
+      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,callback:function(v){return v+'万';}}},
+              y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
+  });
+}
+
+function switchUserJigyo(el, val) {
+  document.getElementById('user-jigyo-filter-row').querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  userJigyoFilter=val;
+  buildUserChart(userJigyoFilter, userStatusFilter);
+}
+
+function switchUserStatus(el, val) {
+  document.getElementById('user-status-filter-row').querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  userStatusFilter=val;
+  buildUserChart(userJigyoFilter, userStatusFilter);
+}
+
+function buildUserTrendChart(data) {
+  if(userTrendChart) userTrendChart.destroy();
+  userTrendChart=new Chart(document.getElementById('chart-user-trend'),{
+    type:'line',
+    data:{
+      labels:data.map(function(d){return d.label;}),
+      datasets:[
+        {label:'越谷',data:data.map(function(d){return d.ko;}),borderColor:TEAL,backgroundColor:'rgba(29,158,117,0.1)',tension:0.3,fill:true,pointRadius:3},
+        {label:'熊谷',data:data.map(function(d){return d.ku;}),borderColor:BLUE,backgroundColor:'rgba(55,138,221,0.1)',tension:0.3,fill:true,pointRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:1}}}}
+  });
+}
+
+function renderNippou(data) {
+  var html='';
+  data.forEach(function(d){
+    html+='<div class="nippou-row">'+
+      '<div><div class="nippou-name">'+d.name+'</div><div class="nippou-sub">'+d.jigyosho+'</div></div>'+
+      '<div class="nippou-count">'+d.count+'件</div>'+
+    '</div>';
+  });
+  document.getElementById('nippou-list').innerHTML=html;
+}
+
+function renderKyushoku(k) {
+  if(!k) return;
+  document.getElementById('k-total').textContent=k.total+'名';
+  document.getElementById('k-jigyo-sub').textContent='越谷 '+k.ko+' ／ 熊谷 '+k.ku;
+  document.getElementById('k-oubo').textContent=k.thisMonthOubo+'名';
+  document.getElementById('k-saiyo').textContent=k.thisMonthSaiyo+'名';
+  var sList=['Indeed情報登録','応募','面接調整中','面接済み','採用','不採用','辞退'];
+  var sColors={'Indeed情報登録':GRAY,'応募':BLUE,'面接調整中':AMBER,'面接済み':'#9B59B6','採用':TEAL,'不採用':RED,'辞退':GRAY};
+  var total=0;
+  sList.forEach(function(s){total+=(k.statusCounts[s]||0);});
+  if(!total) total=1;
+  var html='';
+  sList.forEach(function(s){
+    var w=Math.round((k.statusCounts[s]||0)/total*100);
+    html+='<div class="status-row">'+
+      '<div class="status-label" style="width:100px">'+s+'</div>'+
+      '<div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+sColors[s]+'"></div></div>'+
+      '<div class="status-count">'+(k.statusCounts[s]||0)+'件</div>'+
+    '</div>';
+  });
+  document.getElementById('kyushoku-status-grid').innerHTML=html;
+  if(ouboChart) ouboChart.destroy();
+  ouboChart=new Chart(document.getElementById('chart-oubo-trend'),{
+    type:'bar',
+    data:{
+      labels:k.ouboTrend.map(function(d){return d.label;}),
+      datasets:[{data:k.ouboTrend.map(function(d){return d.count;}),backgroundColor:BLUE,borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:1}}}}
+  });
+}
+
 loadDashboard();
 </script>
 </body>
