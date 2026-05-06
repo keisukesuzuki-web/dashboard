@@ -94,9 +94,14 @@ input,select,textarea,button{font-size:15px !important}
   <div class="header-title">ダッシュボード</div>
   <div class="header-month" id="header-month">読み込み中...</div>
 </div>
+<div style="display:flex;background:#fff;border-bottom:1px solid #E0E0E0;position:sticky;top:52px;z-index:9">
+  <div id="tab-anken" onclick="switchTab('anken')" style="flex:1;text-align:center;padding:11px;font-size:14px;font-weight:600;color:#1D9E75;border-bottom:2px solid #1D9E75;cursor:pointer">案件管理</div>
+  <div id="tab-kyushoku" onclick="switchTab('kyushoku')" style="flex:1;text-align:center;padding:11px;font-size:14px;color:#888;border-bottom:2px solid transparent;cursor:pointer">求職者管理</div>
+</div>
 
 <div class="dash" id="dash-content" style="display:none">
 
+  <div id="section-anken">
   <div class="sec-label" id="summary-label">サマリー</div>
   <div class="metrics-grid">
     <div class="metric-card">
@@ -191,7 +196,10 @@ input,select,textarea,button{font-size:15px !important}
     <div class="nippou-list" id="nippou-list"></div>
   </div>
 
-  <div class="sec-label" style="margin-top:4px">求職者管理</div>
+  </div><!-- /section-anken -->
+
+  <div id="section-kyushoku" style="display:none">
+  <div class="sec-label">求職者管理</div>
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-label">累計求職者数</div>
@@ -218,6 +226,7 @@ input,select,textarea,button{font-size:15px !important}
     <div class="chart-wrap" style="height:140px"><canvas id="chart-oubo-trend"></canvas></div>
   </div>
 
+  </div><!-- /section-kyushoku -->
 </div>
 
 <div class="loading-wrap" id="loading">
@@ -482,6 +491,33 @@ function renderKyushoku(k) {
       scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
               y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:1}}}}
   });
+}
+
+function switchTab(tab) {
+  var anken    = document.getElementById('section-anken');
+  var kyushoku = document.getElementById('section-kyushoku');
+  var tabAnken    = document.getElementById('tab-anken');
+  var tabKyushoku = document.getElementById('tab-kyushoku');
+
+  if (tab === 'anken') {
+    anken.style.display    = '';
+    kyushoku.style.display = 'none';
+    tabAnken.style.color         = '#1D9E75';
+    tabAnken.style.borderBottom  = '2px solid #1D9E75';
+    tabAnken.style.fontWeight    = '600';
+    tabKyushoku.style.color        = '#888';
+    tabKyushoku.style.borderBottom = '2px solid transparent';
+    tabKyushoku.style.fontWeight   = 'normal';
+  } else {
+    anken.style.display    = 'none';
+    kyushoku.style.display = '';
+    tabKyushoku.style.color        = '#1D9E75';
+    tabKyushoku.style.borderBottom = '2px solid #1D9E75';
+    tabKyushoku.style.fontWeight   = '600';
+    tabAnken.style.color         = '#888';
+    tabAnken.style.borderBottom  = '2px solid transparent';
+    tabAnken.style.fontWeight    = 'normal';
+  }
 }
 
 loadDashboard();
