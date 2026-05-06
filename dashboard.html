@@ -6,7 +6,9 @@
 <title>ダッシュボード</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:14px;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:none}
+html{-webkit-text-size-adjust:100% !important;text-size-adjust:100% !important;font-size:15px !important}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:15px !important;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:100% !important;min-width:320px}
+input,select,textarea,button{font-size:15px !important}
 .header{background:#fff;border-bottom:1px solid #E0E0E0;padding:12px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
 .header-title{font-size:17px;font-weight:600}
 .header-month{font-size:12px;color:#888;background:#F5F5F5;padding:3px 10px;border-radius:20px}
@@ -68,6 +70,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .loading-txt{font-size:14px;color:#888}
 .error-wrap{text-align:center;padding:40px 20px;color:#888;font-size:14px;line-height:1.8}
 </style>
+<script>
+(function(){
+  function fix(){
+    var s=document.createElement('style');
+    s.innerHTML='html{font-size:15px!important;-webkit-text-size-adjust:100%!important}'+
+      'body,input,select,button{font-size:15px!important}'+
+      '.metric-value{font-size:20px!important}'+
+      '.header-title{font-size:17px!important}'+
+      '.card{padding:14px 16px!important}';
+    document.head.appendChild(s);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
+  else fix();
+  setTimeout(fix,500);
+  setTimeout(fix,1500);
+})();
+</script>
 </head>
 <body>
 
