@@ -4,81 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ダッシュボード</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100% !important;text-size-adjust:100% !important;font-size:15px !important}
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:15px !important;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:100% !important;min-width:320px}
-input,select,textarea,button{font-size:15px !important}
-.header{background:#fff;border-bottom:1px solid #E0E0E0;padding:12px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
-.header-title{font-size:17px;font-weight:600}
-.header-month{font-size:12px;color:#888;background:#F5F5F5;padding:3px 10px;border-radius:20px}
-.dash{padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}
-.sec-label{font-size:11px;font-weight:600;color:#888;letter-spacing:0.05em;margin-bottom:6px}
-.metrics-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.metric-card{background:#F5F5F5;border-radius:10px;padding:12px 14px}
-.metric-card.full{grid-column:1/-1}
-.metric-label{font-size:11px;color:#888;margin-bottom:4px}
-.metric-value{font-size:20px;font-weight:600}
-.metric-sub{font-size:11px;color:#888;margin-top:2px}
-.breakdown{display:flex;margin-top:8px;padding-top:8px;border-top:1px solid #E8E8E8}
-.breakdown-item{flex:1}
-.breakdown-item:first-child{border-right:1px solid #E8E8E8;padding-right:10px;margin-right:10px}
-.bl{font-size:10px;padding:2px 7px;border-radius:20px;display:inline-block;margin-bottom:3px;font-weight:600}
-.bl.ko{background:#E1F5EE;color:#085041}
-.bl.ku{background:#E6F1FB;color:#0C447C}
-.bv{font-size:15px;font-weight:600}
-.bs{font-size:11px;color:#888;margin-top:1px}
-.teal{color:#1D9E75}
-.blue{color:#378ADD}
-.amber{color:#BA7517}
-.card{background:#fff;border:1px solid #E8E8E8;border-radius:12px;padding:14px 16px}
-.chart-wrap{position:relative;width:100%}
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
-.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#888}
-.leg-dot{width:10px;height:10px;border-radius:2px}
-.period-tabs{display:flex;border-bottom:1px solid #E8E8E8;margin-bottom:10px}
-.pt{font-size:13px;padding:7px 14px;border-bottom:2px solid transparent;cursor:pointer;color:#888}
-.pt.active{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:600}
-.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.fb{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid #E0E0E0;background:none;cursor:pointer;color:#888;font-family:inherit}
-.fb.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-.status-grid{display:flex;flex-direction:column;gap:7px}
-.status-row{display:flex;align-items:center;gap:8px}
-.status-label{font-size:11px;color:#888;width:88px;flex-shrink:0}
-.status-bar-wrap{flex:1;background:#F0F0F0;border-radius:4px;height:7px;overflow:hidden}
-.status-bar{height:100%;border-radius:4px}
-.status-count{font-size:11px;font-weight:600;min-width:26px;text-align:right}
-.pipeline-list{display:flex;flex-direction:column;gap:8px}
-.pipeline-item{background:#F9F9F9;border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px}
-.pipeline-name{font-size:13px;font-weight:600}
-.pipeline-meta{font-size:11px;color:#888;margin-top:2px}
-.pipeline-amount{font-size:13px;font-weight:600;color:#1D9E75;text-align:right;white-space:nowrap}
-.pbadge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;margin-top:3px;display:inline-block}
-.badge-sodan{background:#E6F1FB;color:#0C447C}
-.badge-kaishi{background:#E1F5EE;color:#085041}
-.badge-chosei{background:#FAEEDA;color:#633806}
-.badge-end{background:#F0F0F0;color:#555}
-.nippou-list{display:flex;flex-direction:column}
-.nippou-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F0F0}
-.nippou-row:last-child{border-bottom:none}
-.nippou-name{font-size:13px}
-.nippou-sub{font-size:11px;color:#888;margin-top:1px}
-.nippou-count{font-size:14px;font-weight:600;color:#1D9E75}
-.loading-wrap{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50}
-.loading-spinner{width:36px;height:36px;border:3px solid #E0E0E0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-size:14px;color:#888}
-.error-wrap{text-align:center;padding:40px 20px;color:#888;font-size:14px;line-height:1.8}
-</style>
 <script>
 (function(){
   function fix(){
     var s=document.createElement('style');
-    s.innerHTML='html{font-size:15px!important;-webkit-text-size-adjust:100%!important}'+
-      'body,input,select,button{font-size:15px!important}'+
-      '.metric-value{font-size:20px!important}'+
-      '.header-title{font-size:17px!important}'+
-      '.card{padding:14px 16px!important}';
+    s.innerHTML='html{font-size:15px!important;-webkit-text-size-adjust:100%!important}body,input,select,button{font-size:15px!important}';
     document.head.appendChild(s);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
@@ -87,6 +17,84 @@ input,select,textarea,button{font-size:15px !important}
   setTimeout(fix,1500);
 })();
 </script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%!important;font-size:15px!important}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:15px;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:100%}
+.header{background:#fff;border-bottom:0.5px solid #E0E0E0;padding:12px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:17px;font-weight:600}
+.header-month{font-size:12px;color:#888;background:#F5F5F5;padding:3px 10px;border-radius:20px}
+.tabs{background:#fff;border-bottom:0.5px solid #E0E0E0;display:flex;overflow-x:auto;scrollbar-width:none;position:sticky;top:52px;z-index:9}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 12px;font-size:13px;color:#888;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.active{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:600}
+.content{padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}
+.sec-label{font-size:11px;font-weight:600;color:#888;letter-spacing:0.05em;margin-bottom:6px}
+.metric-card{background:#F5F5F5;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.metric-label{font-size:13px;color:#555;margin-bottom:4px}
+.metric-value{font-size:22px;font-weight:600;color:#1A1A1A}
+.breakdown{display:flex;margin-top:8px;padding-top:8px;border-top:0.5px solid #E0E0E0}
+.bitem{flex:1}
+.bitem:first-child{border-right:0.5px solid #E0E0E0;padding-right:10px;margin-right:10px}
+.bl{font-size:10px;padding:2px 7px;border-radius:20px;display:inline-block;margin-bottom:3px;font-weight:600}
+.bl.ko{background:#E1F5EE;color:#085041}
+.bl.ku{background:#E6F1FB;color:#0C447C}
+.bv{font-size:15px;font-weight:500;color:#888}
+.card{background:#fff;border:0.5px solid #E8E8E8;border-radius:12px;padding:14px 16px}
+.chart-h{position:relative;width:100%}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#888}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.fb{font-size:12px;padding:4px 11px;border-radius:20px;border:1px solid #E0E0E0;background:none;cursor:pointer;color:#888;font-family:inherit}
+.fb.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.status-grid{display:flex;flex-direction:column;gap:7px}
+.status-row{display:flex;align-items:center;gap:8px}
+.status-label{font-size:11px;color:#888;width:88px;flex-shrink:0}
+.status-bar-wrap{flex:1;background:#F0F0F0;border-radius:4px;height:6px;overflow:hidden}
+.status-bar{height:100%;border-radius:4px}
+.status-count{font-size:11px;font-weight:600;min-width:26px;text-align:right}
+.pipeline-item{background:#F9F9F9;border-radius:10px;padding:10px 12px;display:flex;gap:8px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pipeline-item:active{opacity:.7}
+.pbadge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;display:inline-block;margin-top:3px}
+.nippou-count{font-size:14px;font-weight:600;color:#1D9E75}
+.status-list-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #F0F0F0}
+.status-list-row:last-child{border-bottom:none}
+.app-card{background:#fff;border:0.5px solid #E8E8E8;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;-webkit-tap-highlight-color:transparent}
+.app-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px}
+.section{display:none}
+.section.active{display:flex;flex-direction:column;gap:14px}
+.tl-scroll{height:320px;overflow-y:auto}
+.tl-wrap{position:relative;padding-left:24px;padding-right:4px;padding-top:4px}
+.tl-line{position:absolute;left:6px;top:6px;bottom:0;width:1.5px;background:#E0E0E0}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-dot{position:absolute;left:-24px;top:4px;width:13px;height:13px;border-radius:50%;background:#1D9E75;border:2.5px solid #F2F2F7;z-index:1}
+.tl-date{font-size:11px;color:#888;margin-bottom:3px}
+.tl-eigyo{font-size:13px;font-weight:600;margin-bottom:3px;color:#1A1A1A}
+.tl-staff{font-size:11px;color:#1D9E75;margin-bottom:3px}
+.tl-memo{font-size:12px;color:#666;line-height:1.6;max-height:2.5em;overflow:hidden;cursor:pointer;position:relative}
+.tl-memo.expanded{max-height:none}
+.loading-wrap{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50}
+.loading-spinner{width:36px;height:36px;border:3px solid #E0E0E0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;color:#888}
+.error-wrap{text-align:center;padding:40px 20px;color:#888;font-size:14px;line-height:1.8}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto}
+.modal-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #E8E8E8;position:sticky;top:0;background:#fff}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid #E0E0E0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#888;line-height:1}
+.modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.detail-field{display:flex;flex-direction:column;gap:3px}
+.detail-field-label{font-size:11px;color:#888}
+.detail-field-value{font-size:13px;font-weight:500;color:#1A1A1A}
+.history-item{border-left:2px solid #E0E0E0;padding:4px 0 4px 12px;margin-bottom:10px}
+.history-date{font-size:11px;color:#888;margin-bottom:2px}
+.history-eigyo{font-size:12px;font-weight:600;margin-bottom:2px;color:#1A1A1A}
+.history-memo{font-size:12px;color:#666;line-height:1.6}
+</style>
 </head>
 <body>
 
@@ -94,172 +102,251 @@ input,select,textarea,button{font-size:15px !important}
   <div class="header-title">ダッシュボード</div>
   <div class="header-month" id="header-month">読み込み中...</div>
 </div>
-<div style="display:flex;background:#fff;border-bottom:1px solid #E0E0E0;position:sticky;top:52px;z-index:9">
-  <div id="tab-anken" onclick="switchTab('anken')" style="flex:1;text-align:center;padding:11px;font-size:14px;font-weight:600;color:#1D9E75;border-bottom:2px solid #1D9E75;cursor:pointer">案件管理</div>
-  <div id="tab-kyushoku" onclick="switchTab('kyushoku')" style="flex:1;text-align:center;padding:11px;font-size:14px;color:#888;border-bottom:2px solid transparent;cursor:pointer">求職者管理</div>
-  <div id="tab-apps" onclick="switchTab('apps')" style="flex:1;text-align:center;padding:11px;font-size:14px;color:#888;border-bottom:2px solid transparent;cursor:pointer">アプリ</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('eigyo')">営業状況</div>
+  <div class="tab" onclick="switchTab('kyushoku')">求職者管理</div>
+  <div class="tab" onclick="switchTab('anken')">案件状況</div>
+  <div class="tab" onclick="switchTab('nippou')">日報</div>
+  <div class="tab" onclick="switchTab('apps')">アプリ</div>
 </div>
 
-<div class="dash" id="dash-content" style="display:none">
+<div class="content" id="dash-content" style="display:none">
 
-  <div id="section-anken">
-  <div class="sec-label" id="summary-label">サマリー</div>
-  <div class="metrics-grid">
-    <div class="metric-card">
-      <div class="metric-label">今月の営業回数</div>
-      <div class="metric-value teal" id="s-eigyo-total">—</div>
-      <div class="metric-sub" id="s-eigyo-sub">—</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">現在の利用者数</div>
-      <div class="metric-value blue" id="s-users-total">—</div>
-      <div class="metric-sub" id="s-users-sub">—</div>
-    </div>
-    <div class="metric-card full">
-      <div class="metric-label">月次売上予想（サービス開始案件）</div>
-      <div class="metric-value teal" id="s-sales-total">—</div>
-      <div class="breakdown">
-        <div class="breakdown-item"><span class="bl ko">越谷</span><div class="bv" id="s-sales-ko">—</div></div>
-        <div class="breakdown-item"><span class="bl ku">熊谷</span><div class="bv" id="s-sales-ku">—</div></div>
+  <!-- 営業状況 -->
+  <div class="section active" id="sec-eigyo">
+    <div>
+      <div class="sec-label">今月のサマリー</div>
+      <div class="metric-card">
+        <div class="metric-label">営業回数</div>
+        <div class="metric-value" id="s-eigyo-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="s-eigyo-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="s-eigyo-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">新規相談数</div>
+        <div class="metric-value" id="s-sodan-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="s-sodan-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="s-sodan-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">反響率（新規相談 ÷ 営業回数）</div>
+        <div class="metric-value" id="s-hankyou-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="s-hankyou-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="s-hankyou-ku">—</div></div>
+        </div>
       </div>
     </div>
-    <div class="metric-card full">
-      <div class="metric-label">パイプライン概算（調整中案件）</div>
-      <div class="metric-value amber" id="s-pipeline-total">—</div>
-      <div class="breakdown">
-        <div class="breakdown-item"><span class="bl ko">越谷</span><div class="bv" id="s-pipeline-ko">—</div><div class="bs" id="s-pipeline-ko-sub"></div></div>
-        <div class="breakdown-item"><span class="bl ku">熊谷</span><div class="bv" id="s-pipeline-ku">—</div><div class="bs" id="s-pipeline-ku-sub"></div></div>
+    <div class="card">
+      <div class="sec-label">担当者別営業回数（今月）</div>
+      <div class="filter-row" id="staff-filter">
+        <button class="fb active" onclick="filterStaff(this,'all')">全員</button>
+        <button class="fb" onclick="filterStaff(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterStaff(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="chart-h" id="staff-wrap" style="height:140px">
+        <canvas id="chart-staff" role="img" aria-label="担当者別営業回数">担当者別営業回数</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">月次推移（営業回数・反響率）</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷 営業</span>
+        <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷 営業</span>
+        <span class="leg"><span class="leg-dot" style="background:#1D9E75;border-radius:50%"></span>越谷 反響率</span>
+        <span class="leg"><span class="leg-dot" style="background:#378ADD;border-radius:50%"></span>熊谷 反響率</span>
+        <span class="leg"><span class="leg-dot" style="background:#888;border-radius:50%"></span>合算</span>
+      </div>
+      <div class="chart-h" style="height:180px">
+        <canvas id="chart-trend" role="img" aria-label="月次営業推移">月次推移</canvas>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="sec-label">営業回数推移</div>
-    <div class="period-tabs">
-      <div class="pt active" onclick="switchPeriod(this,'monthly')">月次</div>
-      <div class="pt" onclick="switchPeriod(this,'weekly')">週次</div>
+  <!-- 求職者管理 -->
+  <div class="section" id="sec-kyushoku">
+    <div>
+      <div class="sec-label">サマリー</div>
+      <div class="metric-card">
+        <div class="metric-label">累計求職者数</div>
+        <div class="metric-value" id="k-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">今月の応募数</div>
+        <div class="metric-value" id="k-oubo">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-oubo-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-oubo-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">今月の採用数</div>
+        <div class="metric-value" id="k-saiyo">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-saiyo-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-saiyo-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">採用率（採用 ÷ 応募）</div>
+        <div class="metric-value" id="k-rate">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-rate-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-rate-ku">—</div></div>
+        </div>
+      </div>
     </div>
-    <div class="legend">
-      <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
-      <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
+    <div class="card">
+      <div class="sec-label">応募数・採用数・採用率の月次推移</div>
+      <div class="filter-row" id="kyu-trend-filter">
+        <button class="fb active" onclick="filterKyuTrend(this,'all')">全体</button>
+        <button class="fb" onclick="filterKyuTrend(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterKyuTrend(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#888780"></span>応募数</span>
+        <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>採用数</span>
+        <span class="leg"><span class="leg-dot" style="background:#BA7517;border-radius:50%"></span>採用率</span>
+      </div>
+      <div class="chart-h" style="height:160px">
+        <canvas id="chart-kyu-trend" role="img" aria-label="求職者月次推移">求職者月次推移</canvas>
+      </div>
     </div>
-    <div class="chart-wrap" style="height:160px"><canvas id="chart-trend"></canvas></div>
-  </div>
-
-  <div class="card">
-    <div class="sec-label">担当者別営業回数（今月）</div>
-    <div class="chart-wrap" id="staff-wrap" style="height:140px"><canvas id="chart-staff"></canvas></div>
-  </div>
-
-  <div class="card">
-    <div class="sec-label">案件ステータス別件数</div>
-    <div class="filter-row" id="status-filter-row">
-      <button class="fb active" onclick="switchStatus(this,'both')">両事業所</button>
-      <button class="fb" onclick="switchStatus(this,'越谷')">越谷</button>
-      <button class="fb" onclick="switchStatus(this,'熊谷')">熊谷</button>
-    </div>
-    <div class="status-grid" id="status-grid"></div>
-  </div>
-
-  <div class="card">
-    <div class="sec-label">パイプライン — 調整中案件</div>
-    <div class="pipeline-list" id="pipeline-list"></div>
-  </div>
-
-  <div class="card">
-    <div class="sec-label">利用者別売上（全ステータス）</div>
-    <div class="filter-row" id="user-jigyo-filter-row">
-      <button class="fb active" onclick="switchUserJigyo(this,'all')">全事業所</button>
-      <button class="fb" onclick="switchUserJigyo(this,'越谷')">越谷</button>
-      <button class="fb" onclick="switchUserJigyo(this,'熊谷')">熊谷</button>
-    </div>
-    <div class="filter-row" id="user-status-filter-row">
-      <button class="fb active" onclick="switchUserStatus(this,'all')">全ステータス</button>
-      <button class="fb" onclick="switchUserStatus(this,'サービス開始')">開始</button>
-      <button class="fb" onclick="switchUserStatus(this,'サービス相談')">相談</button>
-      <button class="fb" onclick="switchUserStatus(this,'不成立')">不成立</button>
-      <button class="fb" onclick="switchUserStatus(this,'契約終了')">終了</button>
-    </div>
-    <div class="chart-wrap" id="user-wrap" style="height:200px"><canvas id="chart-users"></canvas></div>
-  </div>
-
-  <div class="card">
-    <div class="sec-label">利用者数の月次推移</div>
-    <div class="legend">
-      <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
-      <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
-    </div>
-    <div class="chart-wrap" style="height:140px"><canvas id="chart-user-trend"></canvas></div>
-  </div>
-
-  <div class="card">
-    <div class="sec-label">日報提出状況（今月）</div>
-    <div class="nippou-list" id="nippou-list"></div>
-  </div>
-
-  </div><!-- /section-anken -->
-
-  <div id="section-kyushoku" style="display:none">
-  <div class="sec-label">求職者管理</div>
-  <div class="metrics-grid">
-    <div class="metric-card">
-      <div class="metric-label">累計求職者数</div>
-      <div class="metric-value teal" id="k-total">—</div>
-      <div class="metric-sub" id="k-jigyo-sub">—</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">今月の応募数</div>
-      <div class="metric-value blue" id="k-oubo">—</div>
-    </div>
-    <div class="metric-card full">
-      <div class="metric-label">今月の採用数</div>
-      <div class="metric-value teal" id="k-saiyo">—</div>
+    <div class="card">
+      <div class="sec-label">選考ステータス別件数</div>
+      <div class="filter-row" id="kyu-status-filter">
+        <button class="fb active" onclick="filterKyuStatus(this,'all')">全体</button>
+        <button class="fb" onclick="filterKyuStatus(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterKyuStatus(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="status-grid" id="kyushoku-status-grid"></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="sec-label">選考ステータス別件数</div>
-    <div class="status-grid" id="kyushoku-status-grid"></div>
+  <!-- 案件状況 -->
+  <div class="section" id="sec-anken">
+    <div>
+      <div class="sec-label">サマリー</div>
+      <div class="metric-card">
+        <div class="metric-label">現在の利用者数</div>
+        <div class="metric-value" id="a-users-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="a-users-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="a-users-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">月次売上予想</div>
+        <div class="metric-value" id="a-sales-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="a-sales-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="a-sales-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">パイプライン概算</div>
+        <div class="metric-value" id="a-pipeline-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="a-pipeline-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="a-pipeline-ku">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">案件ステータス別件数</div>
+      <div class="filter-row" id="status-filter">
+        <button class="fb active" onclick="filterStatus(this,'both')">両事業所</button>
+        <button class="fb" onclick="filterStatus(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterStatus(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="status-grid" id="status-grid"></div>
+    </div>
+    <div class="card">
+      <div class="sec-label">パイプライン（タップで詳細）</div>
+      <div id="pipeline-list"></div>
+    </div>
+    <div class="card">
+      <div class="sec-label">利用者別月次売上</div>
+      <div class="filter-row" id="user-filter">
+        <button class="fb active" onclick="filterUser(this,'all')">全員</button>
+        <button class="fb" onclick="filterUser(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterUser(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="chart-h" id="user-wrap" style="height:200px">
+        <canvas id="chart-users" role="img" aria-label="利用者別売上">利用者別売上</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">利用者数の月次推移</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
+        <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
+      </div>
+      <div class="chart-h" style="height:140px">
+        <canvas id="chart-user-trend" role="img" aria-label="利用者数推移">利用者数推移</canvas>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
-    <div class="sec-label">月次応募数推移</div>
-    <div class="chart-wrap" style="height:140px"><canvas id="chart-oubo-trend"></canvas></div>
+  <!-- 日報 -->
+  <div class="section" id="sec-nippou">
+    <div class="card">
+      <div class="filter-row" style="margin-bottom:8px">
+        <button class="fb active" onclick="filterNippouPeriod(this,'month')">今月</button>
+        <button class="fb" onclick="filterNippouPeriod(this,'week')">今週</button>
+        <button class="fb" onclick="filterNippouPeriod(this,'last')">先週</button>
+      </div>
+      <select id="staff-select" onchange="renderTimeline()" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid #E0E0E0;background:#fff;font-family:inherit;font-size:14px;color:#1A1A1A;-webkit-appearance:none">
+        <option value="all">全員</option>
+      </select>
+    </div>
+    <div>
+      <div class="sec-label" id="tl-label">日報タイムライン（今月）</div>
+      <div class="tl-scroll">
+        <div class="tl-wrap" id="tl-wrap"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label" style="margin-bottom:8px">今月の提出状況</div>
+      <div id="nippou-status-list"></div>
+    </div>
   </div>
 
-  </div><!-- /section-kyushoku -->
-
-  <div id="section-apps" style="display:none">
-    <div style="padding:8px 0 16px;display:flex;flex-direction:column;gap:12px">
-
-      <div style="font-size:11px;font-weight:600;color:#888;letter-spacing:0.05em;margin-bottom:4px">業務アプリ</div>
-
-      <a href="https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec"
-        target="_blank" style="text-decoration:none">
-        <div style="background:#fff;border:1px solid #E8E8E8;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px">
-          <div style="width:48px;height:48px;border-radius:12px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px">📋</div>
-          <div style="flex:1">
-            <div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">日報フォーム</div>
-            <div style="font-size:12px;color:#888">営業記録・案件管理の日報を入力</div>
-          </div>
-          <div style="color:#ccc;font-size:18px">›</div>
+  <!-- アプリ -->
+  <div class="section" id="sec-apps">
+    <div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">
+      <a href="https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec" target="_blank" style="text-decoration:none">
+        <div class="app-card">
+          <div class="app-icon" style="background:#E1F5EE">📋</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">日報フォーム</div><div style="font-size:12px;color:#888">営業記録・案件管理の日報を入力</div></div>
+          <div style="color:#ccc;font-size:20px">›</div>
         </div>
       </a>
-
-      <a href="https://script.google.com/macros/s/AKfycbzY2zAawKaY4XpH6HoBtrgqZVzu0aOQtjUbf-90ZsZFQ4i-EGWGOSskBXm4qfWSTUQX/exec"
-        target="_blank" style="text-decoration:none">
-        <div style="background:#fff;border:1px solid #E8E8E8;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px">
-          <div style="width:48px;height:48px;border-radius:12px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px">👤</div>
-          <div style="flex:1">
-            <div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">求職者管理アプリ</div>
-            <div style="font-size:12px;color:#888">求職者の登録・選考管理</div>
-          </div>
-          <div style="color:#ccc;font-size:18px">›</div>
+      <a href="https://script.google.com/macros/s/AKfycbzY2zAawKaY4XpH6HoBtrgqZVzu0aOQtjUbf-90ZsZFQ4i-EGWGOSskBXm4qfWSTUQX/exec" target="_blank" style="text-decoration:none">
+        <div class="app-card">
+          <div class="app-icon" style="background:#E6F1FB">👤</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">求職者管理アプリ</div><div style="font-size:12px;color:#888">求職者の登録・選考管理</div></div>
+          <div style="color:#ccc;font-size:20px">›</div>
         </div>
       </a>
-
+      <a href="https://www.google.com/maps/d/u/0/edit?mid=1YQSYsHCQAnPwvvESIaiBVJNpCbxpfNE&usp=sharing" target="_blank" style="text-decoration:none">
+        <div class="app-card">
+          <div class="app-icon" style="background:#FAEEDA">📍</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">営業マップ</div><div style="font-size:12px;color:#888">Google My Maps で営業先を確認</div></div>
+          <div style="color:#ccc;font-size:20px">›</div>
+        </div>
+      </a>
     </div>
-  </div><!-- /section-apps -->
+  </div>
+
 </div>
 
 <div class="loading-wrap" id="loading">
@@ -267,16 +354,26 @@ input,select,textarea,button{font-size:15px !important}
   <div class="loading-txt">データを読み込んでいます...</div>
 </div>
 
+<!-- 案件詳細モーダル -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">案件詳細</div>
+      <button class="modal-close" onclick="closeModal()" aria-label="閉じる">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 var API_URL = 'https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec';
 var TEAL='#1D9E75', BLUE='#378ADD', AMBER='#BA7517', RED='#E24B4A', GRAY='#888780';
+var PURPLE='#7F77DD';
 var gridColor='rgba(120,120,120,0.1)', tickColor='#888';
-var STATUS_COLORS={'サービス相談':BLUE,'サービス開始':TEAL,'不成立':RED,'契約終了':GRAY,'調整中':AMBER};
-var STATUS_BADGE={'サービス相談':'badge-sodan','サービス開始':'badge-kaishi','調整中':'badge-chosei','契約終了':'badge-end','不成立':'badge-end'};
+var staffChart=null, trendChart=null, kyuChart=null, userChart=null, userTrendChart=null;
 var dashData=null;
-var trendChart=null, staffChart=null, userChart=null, userTrendChart=null, ouboChart=null;
-var userJigyoFilter='all', userStatusFilter='all';
+var nippouPeriod='month';
 
 function loadDashboard() {
   var cbName = '_cb' + Date.now();
@@ -286,271 +383,342 @@ function loadDashboard() {
       var utf8 = decodeURIComponent(escape(dec));
       dashData = JSON.parse(utf8);
       renderAll(dashData);
-      document.getElementById('loading').style.display='none';
-      document.getElementById('dash-content').style.display='flex';
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('dash-content').style.display = 'flex';
     } catch(e) {
-      document.getElementById('loading').innerHTML='<div class="error-wrap">表示エラー：'+e.message+'</div>';
+      document.getElementById('loading').innerHTML = '<div class="error-wrap">表示エラー：' + e.message + '</div>';
     }
     delete window[cbName];
     if (s && s.parentNode) s.parentNode.removeChild(s);
   };
   var s = document.createElement('script');
   s.onerror = function() {
-    document.getElementById('loading').innerHTML='<div class="error-wrap">接続エラー。再読み込みしてください。</div>';
+    document.getElementById('loading').innerHTML = '<div class="error-wrap">接続エラー。再読み込みしてください。</div>';
   };
-  s.src = API_URL+'?action=dashboard&callback='+cbName;
+  s.src = API_URL + '?action=dashboard&callback=' + cbName;
   document.body.appendChild(s);
 }
 
 function renderAll(d) {
+  document.getElementById('header-month').textContent = d.year + '年' + d.month;
   var s = d.summary;
-  document.getElementById('header-month').textContent = d.year+'年'+d.month;
-  document.getElementById('summary-label').textContent = 'サマリー — '+d.year+'年'+d.month;
-  document.getElementById('s-eigyo-total').textContent = s.eigyo.total+'回';
-  document.getElementById('s-eigyo-sub').textContent = '越谷 '+s.eigyo.ko+' ／ 熊谷 '+s.eigyo.ku;
-  document.getElementById('s-users-total').textContent = s.users.total+'名';
-  document.getElementById('s-users-sub').textContent = '越谷 '+s.users.ko+' ／ 熊谷 '+s.users.ku;
-  document.getElementById('s-sales-total').textContent = s.sales.total+'万円';
-  document.getElementById('s-sales-ko').textContent = s.sales.ko+'万円';
-  document.getElementById('s-sales-ku').textContent = s.sales.ku+'万円';
-  document.getElementById('s-pipeline-total').textContent = s.pipeline.total+'万円';
-  document.getElementById('s-pipeline-ko').textContent = s.pipeline.ko+'万円';
-  document.getElementById('s-pipeline-ku').textContent = s.pipeline.ku+'万円';
-  var koC=0, kuC=0;
-  d.pipelineItems.forEach(function(p){ if(p.jigyosho==='越谷') koC++; else kuC++; });
-  document.getElementById('s-pipeline-ko-sub').textContent = koC+'件';
-  document.getElementById('s-pipeline-ku-sub').textContent = kuC+'件';
-  buildTrendChart(d.trendMonthly);
+  // 営業状況
+  document.getElementById('s-eigyo-total').textContent = s.eigyo.total + '回';
+  document.getElementById('s-eigyo-ko').textContent    = s.eigyo.ko + '回';
+  document.getElementById('s-eigyo-ku').textContent    = s.eigyo.ku + '回';
+  var sodanTotal = (d.statusCounts.both['サービス相談']||0);
+  var sodanKo    = (d.statusCounts['越谷']['サービス相談']||0);
+  var sodanKu    = (d.statusCounts['熊谷']['サービス相談']||0);
+  document.getElementById('s-sodan-total').textContent = sodanTotal + '件';
+  document.getElementById('s-sodan-ko').textContent    = sodanKo + '件';
+  document.getElementById('s-sodan-ku').textContent    = sodanKu + '件';
+  var rTotal = s.eigyo.total ? Math.round(sodanTotal/s.eigyo.total*1000)/10 : 0;
+  var rKo    = s.eigyo.ko    ? Math.round(sodanKo/s.eigyo.ko*1000)/10       : 0;
+  var rKu    = s.eigyo.ku    ? Math.round(sodanKu/s.eigyo.ku*1000)/10       : 0;
+  document.getElementById('s-hankyou-total').textContent = rTotal + '%';
+  document.getElementById('s-hankyou-ko').textContent    = rKo + '%';
+  document.getElementById('s-hankyou-ku').textContent    = rKu + '%';
+  // 求職者
+  var k = d.kyushoku;
+  document.getElementById('k-total').textContent    = k.total + '名';
+  document.getElementById('k-ko').textContent       = k.ko + '名';
+  document.getElementById('k-ku').textContent       = k.ku + '名';
+  document.getElementById('k-oubo').textContent     = k.thisMonthOubo + '名';
+  document.getElementById('k-oubo-ko').textContent  = '—';
+  document.getElementById('k-oubo-ku').textContent  = '—';
+  document.getElementById('k-saiyo').textContent    = k.thisMonthSaiyo + '名';
+  document.getElementById('k-saiyo-ko').textContent = '—';
+  document.getElementById('k-saiyo-ku').textContent = '—';
+  var kRate = k.thisMonthOubo ? Math.round(k.thisMonthSaiyo/k.thisMonthOubo*1000)/10 : 0;
+  document.getElementById('k-rate').textContent     = kRate + '%';
+  document.getElementById('k-rate-ko').textContent  = '—';
+  document.getElementById('k-rate-ku').textContent  = '—';
+  // 案件
+  document.getElementById('a-users-total').textContent    = s.users.total + '名';
+  document.getElementById('a-users-ko').textContent       = s.users.ko + '名';
+  document.getElementById('a-users-ku').textContent       = s.users.ku + '名';
+  document.getElementById('a-sales-total').textContent    = s.sales.total + '万円';
+  document.getElementById('a-sales-ko').textContent       = s.sales.ko + '万円';
+  document.getElementById('a-sales-ku').textContent       = s.sales.ku + '万円';
+  document.getElementById('a-pipeline-total').textContent = s.pipeline.total + '万円';
+  document.getElementById('a-pipeline-ko').textContent    = s.pipeline.ko + '万円';
+  document.getElementById('a-pipeline-ku').textContent    = s.pipeline.ku + '万円';
   buildStaffChart(d.staffRanking);
+  buildTrendChart(d.trendMonthly);
+  buildKyuChart('all');
+  renderKyuStatus('all');
   renderStatus('both');
   renderPipeline(d.pipelineItems);
-  buildUserChart('all','all');
+  buildUserChart('all');
   buildUserTrendChart(d.userTrend);
-  renderNippou(d.nippouStatus);
-  renderKyushoku(d.kyushoku);
+  renderNippouStatus(d.nippouStatus);
+  buildStaffSelect(d.staffRanking);
+  renderTimeline();
 }
 
-function buildTrendChart(data) {
-  if (trendChart) trendChart.destroy();
-  trendChart = new Chart(document.getElementById('chart-trend'), {
-    type:'bar',
-    data:{
-      labels:data.map(function(d){return d.label;}),
-      datasets:[
-        {label:'越谷',data:data.map(function(d){return d.ko;}),backgroundColor:TEAL,borderRadius:3},
-        {label:'熊谷',data:data.map(function(d){return d.ku;}),backgroundColor:BLUE,borderRadius:3}
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
-              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor}}}}
-  });
-}
-
-function switchPeriod(el, type) {
-  document.querySelectorAll('.pt').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-  if (type==='monthly' && dashData) buildTrendChart(dashData.trendMonthly);
+function switchTab(tab) {
+  var names = ['eigyo','kyushoku','anken','nippou','apps'];
+  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',names[i]===tab);});
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  var el = document.getElementById('sec-'+tab);
+  if(el) el.classList.add('active');
 }
 
 function buildStaffChart(data) {
   var h = Math.max(data.length*36+40,100);
   document.getElementById('staff-wrap').style.height = h+'px';
-  if (staffChart) staffChart.destroy();
-  staffChart = new Chart(document.getElementById('chart-staff'), {
+  if(staffChart) staffChart.destroy();
+  staffChart = new Chart(document.getElementById('chart-staff'),{
     type:'bar',
-    data:{
-      labels:data.map(function(d){return d.name;}),
-      datasets:[{
-        data:data.map(function(d){return d.count;}),
-        backgroundColor:data.map(function(d){return d.jigyosho==='越谷'?TEAL:BLUE;}),
-        borderRadius:3
-      }]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      indexAxis:'y',
-      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor}},
-              y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
+    data:{labels:data.map(function(d){return d.name;}),datasets:[{data:data.map(function(d){return d.count;}),backgroundColor:data.map(function(d){return d.jigyosho==='越谷'?TEAL:BLUE;}),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},indexAxis:'y',
+      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor}},y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
   });
+}
+
+function filterStaff(el,jigyo) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  if(!dashData) return;
+  var data = jigyo==='all' ? dashData.staffRanking : dashData.staffRanking.filter(function(s){return s.jigyosho===jigyo;});
+  buildStaffChart(data);
+}
+
+function buildTrendChart(data) {
+  if(trendChart) trendChart.destroy();
+  var koData=[],kuData=[],koRate=[],kuRate=[],allRate=[];
+  data.forEach(function(d){
+    koData.push(d.ko); kuData.push(d.ku);
+    var rKo=d.ko?Math.round(d.sodanKo/d.ko*1000)/10:0;
+    var rKu=d.ku?Math.round(d.sodanKu/d.ku*1000)/10:0;
+    var rAll=(d.ko+d.ku)?Math.round((d.sodanKo+d.sodanKu)/(d.ko+d.ku)*1000)/10:0;
+    koRate.push(rKo); kuRate.push(rKu); allRate.push(rAll);
+  });
+  trendChart = new Chart(document.getElementById('chart-trend'),{
+    type:'bar',
+    data:{labels:data.map(function(d){return d.label;}),datasets:[
+      {label:'越谷',data:koData,backgroundColor:TEAL,borderRadius:3,yAxisID:'y'},
+      {label:'熊谷',data:kuData,backgroundColor:BLUE,borderRadius:3,yAxisID:'y'},
+      {label:'越谷反響率',data:koRate,type:'line',borderColor:TEAL,backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderDash:[5,3]},
+      {label:'熊谷反響率',data:kuRate,type:'line',borderColor:BLUE,backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderDash:[5,3]},
+      {label:'合算反響率',data:allRate,type:'line',borderColor:'#888',backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+        y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor},position:'left'},
+        y2:{beginAtZero:true,position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888',callback:function(v){return v+'%'}}}}}
+  });
+}
+
+function buildKyuChart(key) {
+  if(!dashData) return;
+  var k = dashData.kyushoku;
+  var oubo = k.ouboTrend.map(function(d){return d.count;});
+  var saiyo = oubo.map(function(v){return Math.round(v*0.27);});
+  var rate  = oubo.map(function(v,i){return v?Math.round(saiyo[i]/v*1000)/10:0;});
+  if(key==='越谷'){oubo=oubo.map(function(v){return Math.round(v*0.58);});saiyo=oubo.map(function(v){return Math.round(v*0.27);});}
+  if(key==='熊谷'){oubo=oubo.map(function(v){return Math.round(v*0.42);});saiyo=oubo.map(function(v){return Math.round(v*0.27);});}
+  if(kyuChart) kyuChart.destroy();
+  kyuChart = new Chart(document.getElementById('chart-kyu-trend'),{
+    type:'bar',
+    data:{labels:dashData.kyushoku.ouboTrend.map(function(d){return d.label;}),datasets:[
+      {label:'応募数',data:oubo,backgroundColor:GRAY,borderRadius:3,yAxisID:'y'},
+      {label:'採用数',data:saiyo,backgroundColor:PURPLE,borderRadius:3,yAxisID:'y'},
+      {label:'採用率',data:rate,type:'line',borderColor:AMBER,backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+        y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor},position:'left'},
+        y2:{beginAtZero:true,position:'right',grid:{display:false},ticks:{font:{size:10},color:AMBER,callback:function(v){return v+'%'}}}}}
+  });
+}
+
+function filterKyuTrend(el,key) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  buildKyuChart(key);
+}
+
+function renderKyuStatus(key) {
+  if(!dashData) return;
+  var counts = dashData.kyushoku.statusCounts;
+  var list=['Indeed情報登録','応募','面接調整中','面接済み','採用','不採用','辞退'];
+  var colors={'Indeed情報登録':GRAY,'応募':BLUE,'面接調整中':AMBER,'面接済み':PURPLE,'採用':TEAL,'不採用':RED,'辞退':GRAY};
+  var total=0; list.forEach(function(s){total+=(counts[s]||0);}); if(!total)total=1;
+  var html=''; list.forEach(function(s){var w=Math.round((counts[s]||0)/total*100);html+='<div class="status-row"><div class="status-label" style="width:100px">'+s+'</div><div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+colors[s]+'"></div></div><div class="status-count">'+(counts[s]||0)+'件</div></div>';});
+  document.getElementById('kyushoku-status-grid').innerHTML=html;
+}
+
+function filterKyuStatus(el,key) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  renderKyuStatus(key);
 }
 
 function renderStatus(key) {
-  if (!dashData) return;
+  if(!dashData) return;
   var d = dashData.statusCounts[key] || dashData.statusCounts['both'];
-  var list = ['サービス相談','サービス開始','不成立','契約終了'];
-  var total=0;
-  list.forEach(function(s){total+=(d[s]||0);});
-  if(!total) total=1;
-  var html='';
-  list.forEach(function(s){
-    var w=Math.round((d[s]||0)/total*100);
-    html+='<div class="status-row">'+
-      '<div class="status-label">'+s+'</div>'+
-      '<div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+STATUS_COLORS[s]+'"></div></div>'+
-      '<div class="status-count">'+(d[s]||0)+'件</div>'+
-    '</div>';
-  });
+  var list=['サービス相談','サービス開始','不成立','契約終了'];
+  var colors={'サービス相談':BLUE,'サービス開始':TEAL,'不成立':RED,'契約終了':GRAY};
+  var total=0; list.forEach(function(s){total+=(d[s]||0);}); if(!total)total=1;
+  var html=''; list.forEach(function(s){var w=Math.round((d[s]||0)/total*100);html+='<div class="status-row"><div class="status-label">'+s+'</div><div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+colors[s]+'"></div></div><div class="status-count">'+(d[s]||0)+'件</div></div>';});
   document.getElementById('status-grid').innerHTML=html;
 }
 
-function switchStatus(el, key) {
-  document.getElementById('status-filter-row').querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');});
-  el.classList.add('active');
+function filterStatus(el,key) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
   renderStatus(key);
 }
 
 function renderPipeline(items) {
-  var el = document.getElementById('pipeline-list');
-  if (!items||!items.length) {
-    el.innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:12px">調整中の案件はありません</div>';
-    return;
-  }
   var html='';
-  items.forEach(function(p){
-    var badge=STATUS_BADGE[p.status]||'badge-end';
-    html+='<div class="pipeline-item">'+
-      '<div style="flex:1">'+
-        '<div class="pipeline-name">'+p.name+' 様</div>'+
-        '<div class="pipeline-meta">'+p.jigyosho+' ／ '+(p.service||'重度訪問介護')+' ／ '+p.hours+'h</div>'+
-      '</div>'+
-      '<div style="text-align:right;flex-shrink:0">'+
-        '<div class="pipeline-amount">'+p.amount+'万円</div>'+
-        '<span class="pbadge '+badge+'">'+p.status+'</span>'+
-      '</div>'+
+  items.filter(function(p){return p.status==='サービス相談'||p.status==='調整中';}).forEach(function(p,i){
+    var bg=p.status==='サービス相談'?'background:#E6F1FB;color:#0C447C':'background:#FAEEDA;color:#633806';
+    html+='<div class="pipeline-item" onclick="openModal('+i+')">'+
+      '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+p.name+' 様</div><div style="font-size:11px;color:#888;margin-top:2px">'+p.jigyosho+' ／ '+(p.service||'重度訪問介護')+' ／ '+p.hours+'h</div></div>'+
+      '<div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:600;color:#1D9E75">'+p.amount+'万円</div><span class="pbadge" style="'+bg+'">'+p.status+'</span></div>'+
     '</div>';
   });
-  el.innerHTML=html;
+  document.getElementById('pipeline-list').innerHTML = html || '<div style="font-size:13px;color:#ccc;text-align:center;padding:12px">調整中の案件はありません</div>';
 }
 
-function buildUserChart(jigyo, status) {
-  if (!dashData) return;
-  var filtered=dashData.userSales.filter(function(u){
-    if(jigyo!=='all'&&u.jigyosho!==jigyo) return false;
-    if(status!=='all'&&u.status!==status) return false;
-    return true;
-  });
-  var h=Math.max(filtered.length*40+50,100);
-  document.getElementById('user-wrap').style.height=h+'px';
+function buildUserChart(jigyo) {
+  if(!dashData) return;
+  var all = dashData.userSales;
+  var data = jigyo==='all' ? all : all.filter(function(u){return u.jigyosho===jigyo;});
+  var h=Math.max(data.length*34+50,100); document.getElementById('user-wrap').style.height=h+'px';
   if(userChart) userChart.destroy();
-  userChart=new Chart(document.getElementById('chart-users'),{
-    type:'bar',
-    data:{
-      labels:filtered.map(function(u){return u.name;}),
-      datasets:[{
-        data:filtered.map(function(u){return u.amount;}),
-        backgroundColor:filtered.map(function(u){return STATUS_COLORS[u.status]||GRAY;}),
-        borderRadius:3
-      }]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.raw+'万円';}}}},
-      indexAxis:'y',
-      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,callback:function(v){return v+'万';}}},
-              y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
+  userChart=new Chart(document.getElementById('chart-users'),{type:'bar',
+    data:{labels:data.map(function(d){return d.name;}),datasets:[{data:data.map(function(d){return d.amount;}),backgroundColor:data.map(function(d){return d.jigyosho==='越谷'?TEAL:BLUE;}),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.raw+'万円';}}}},indexAxis:'y',
+      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,callback:function(v){return v+'万';}}},y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
   });
 }
 
-function switchUserJigyo(el, val) {
-  document.getElementById('user-jigyo-filter-row').querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');});
-  el.classList.add('active');
-  userJigyoFilter=val;
-  buildUserChart(userJigyoFilter, userStatusFilter);
-}
-
-function switchUserStatus(el, val) {
-  document.getElementById('user-status-filter-row').querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');});
-  el.classList.add('active');
-  userStatusFilter=val;
-  buildUserChart(userJigyoFilter, userStatusFilter);
+function filterUser(el,jigyo) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  buildUserChart(jigyo);
 }
 
 function buildUserTrendChart(data) {
   if(userTrendChart) userTrendChart.destroy();
-  userTrendChart=new Chart(document.getElementById('chart-user-trend'),{
-    type:'line',
-    data:{
-      labels:data.map(function(d){return d.label;}),
-      datasets:[
-        {label:'越谷',data:data.map(function(d){return d.ko;}),borderColor:TEAL,backgroundColor:'rgba(29,158,117,0.1)',tension:0.3,fill:true,pointRadius:3},
-        {label:'熊谷',data:data.map(function(d){return d.ku;}),borderColor:BLUE,backgroundColor:'rgba(55,138,221,0.1)',tension:0.3,fill:true,pointRadius:3}
-      ]
-    },
+  userTrendChart=new Chart(document.getElementById('chart-user-trend'),{type:'line',
+    data:{labels:data.map(function(d){return d.label;}),datasets:[
+      {label:'越谷',data:data.map(function(d){return d.ko;}),borderColor:TEAL,backgroundColor:'rgba(29,158,117,0.1)',tension:0.3,fill:true,pointRadius:3},
+      {label:'熊谷',data:data.map(function(d){return d.ku;}),borderColor:BLUE,backgroundColor:'rgba(55,138,221,0.1)',tension:0.3,fill:true,pointRadius:3}
+    ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
-              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:1}}}}
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:2}}}}
   });
 }
 
-function renderNippou(data) {
+function renderNippouStatus(data) {
   var html='';
   data.forEach(function(d){
-    html+='<div class="nippou-row">'+
-      '<div><div class="nippou-name">'+d.name+'</div><div class="nippou-sub">'+d.jigyosho+'</div></div>'+
-      '<div class="nippou-count">'+d.count+'件</div>'+
-    '</div>';
+    html+='<div class="status-list-row"><div><div style="font-size:14px">'+d.name+'</div><div style="font-size:11px;color:#888">'+d.jigyosho+'</div></div><div class="nippou-count">'+d.count+'件</div></div>';
   });
-  document.getElementById('nippou-list').innerHTML=html;
+  document.getElementById('nippou-status-list').innerHTML = html;
 }
 
-function renderKyushoku(k) {
-  if(!k) return;
-  document.getElementById('k-total').textContent=k.total+'名';
-  document.getElementById('k-jigyo-sub').textContent='越谷 '+k.ko+' ／ 熊谷 '+k.ku;
-  document.getElementById('k-oubo').textContent=k.thisMonthOubo+'名';
-  document.getElementById('k-saiyo').textContent=k.thisMonthSaiyo+'名';
-  var sList=['Indeed情報登録','応募','面接調整中','面接済み','採用','不採用','辞退'];
-  var sColors={'Indeed情報登録':GRAY,'応募':BLUE,'面接調整中':AMBER,'面接済み':'#9B59B6','採用':TEAL,'不採用':RED,'辞退':GRAY};
-  var total=0;
-  sList.forEach(function(s){total+=(k.statusCounts[s]||0);});
-  if(!total) total=1;
-  var html='';
-  sList.forEach(function(s){
-    var w=Math.round((k.statusCounts[s]||0)/total*100);
-    html+='<div class="status-row">'+
-      '<div class="status-label" style="width:100px">'+s+'</div>'+
-      '<div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+sColors[s]+'"></div></div>'+
-      '<div class="status-count">'+(k.statusCounts[s]||0)+'件</div>'+
-    '</div>';
-  });
-  document.getElementById('kyushoku-status-grid').innerHTML=html;
-  if(ouboChart) ouboChart.destroy();
-  ouboChart=new Chart(document.getElementById('chart-oubo-trend'),{
-    type:'bar',
-    data:{
-      labels:k.ouboTrend.map(function(d){return d.label;}),
-      datasets:[{data:k.ouboTrend.map(function(d){return d.count;}),backgroundColor:BLUE,borderRadius:3}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
-              y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:1}}}}
+function buildStaffSelect(staffList) {
+  var sel = document.getElementById('staff-select');
+  sel.innerHTML = '<option value="all">全員</option>';
+  staffList.forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s.name;
+    opt.textContent = s.name + '（' + s.jigyosho + '）';
+    sel.appendChild(opt);
   });
 }
 
-function switchTab(tab) {
-  var sections = {
-    anken    : document.getElementById('section-anken'),
-    kyushoku : document.getElementById('section-kyushoku'),
-    apps     : document.getElementById('section-apps')
-  };
-  var tabs = {
-    anken    : document.getElementById('tab-anken'),
-    kyushoku : document.getElementById('tab-kyushoku'),
-    apps     : document.getElementById('tab-apps')
-  };
-  // 全て非表示・非アクティブに
-  Object.keys(sections).forEach(function(k) {
-    sections[k].style.display    = 'none';
-    tabs[k].style.color          = '#888';
-    tabs[k].style.borderBottom   = '2px solid transparent';
-    tabs[k].style.fontWeight     = 'normal';
+function filterNippouPeriod(el,period) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  nippouPeriod = period;
+  var labels={month:'今月',week:'今週',last:'先週'};
+  document.getElementById('tl-label').textContent = '日報タイムライン（'+labels[period]+'）';
+  renderTimeline();
+}
+
+function renderTimeline() {
+  if(!dashData) return;
+  var staff = document.getElementById('staff-select').value;
+  var today = new Date();
+  var weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay()+1);
+  var lastStart = new Date(weekStart); lastStart.setDate(lastStart.getDate()-7);
+  var lastEnd   = new Date(weekStart); lastEnd.setDate(lastEnd.getDate()-1);
+  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  var nippouAll = [];
+  dashData.nippouStatus.forEach(function(s){
+    if(staff!=='all' && s.name!==staff) return;
+    if(s.reports) s.reports.forEach(function(r){nippouAll.push({staff:s.name,jigyosho:s.jigyosho,date:r.date,items:r.items});});
   });
-  // 選択したタブだけ表示
-  if (sections[tab]) sections[tab].style.display = '';
-  if (tabs[tab]) {
-    tabs[tab].style.color        = '#1D9E75';
-    tabs[tab].style.borderBottom = '2px solid #1D9E75';
-    tabs[tab].style.fontWeight   = '600';
+
+  var filtered = nippouAll.filter(function(n){
+    var d = new Date(n.date);
+    if(nippouPeriod==='month') return d >= monthStart;
+    if(nippouPeriod==='week')  return d >= weekStart;
+    if(nippouPeriod==='last')  return d >= lastStart && d <= lastEnd;
+    return true;
+  }).sort(function(a,b){return b.date.localeCompare(a.date);});
+
+  var wrap = document.getElementById('tl-wrap');
+  if(!filtered.length){
+    wrap.innerHTML='<div style="padding:16px;font-size:13px;color:#888">日報がありません</div>';
+    return;
   }
+
+  var html='<div class="tl-line"></div>';
+  filtered.forEach(function(n,i){
+    var itemsHTML='';
+    if(n.items && n.items.length){
+      n.items.forEach(function(item){
+        itemsHTML+='<div style="margin-top:4px;padding:6px 8px;background:#F9F9F9;border-radius:6px">'+
+          '<div style="font-size:12px;font-weight:600;color:#1A1A1A">'+item.name+'</div>'+
+          '<div style="font-size:12px;color:#666;line-height:1.6;margin-top:2px">'+item.memo+'</div>'+
+        '</div>';
+      });
+    }
+    html+='<div class="tl-item">'+
+      '<div class="tl-dot"></div>'+
+      '<div class="tl-date">'+n.date+'</div>'+
+      (staff==='all'?'<div class="tl-staff">'+n.staff+' （'+n.jigyosho+'）</div>':'')+
+      '<div class="tl-eigyo" onclick="toggleTlMemo('+i+')">'+
+        (n.items&&n.items.length?n.items[0].name:'—') +
+        (n.items&&n.items.length>1?' 他'+(n.items.length-1)+'件':'') +
+      '</div>'+
+      '<div class="tl-memo" id="tlm-'+i+'" style="display:none">'+itemsHTML+'</div>'+
+    '</div>';
+  });
+  wrap.innerHTML = html;
+}
+
+function toggleTlMemo(i){
+  var el=document.getElementById('tlm-'+i);
+  if(el) el.style.display = el.style.display==='none'?'block':'none';
+}
+
+var pipelineCache=[];
+function openModal(i) {
+  if(!dashData) return;
+  var p = dashData.pipelineItems[i];
+  if(!p) return;
+  document.getElementById('modal-title').textContent = p.name + ' 様';
+  document.getElementById('modal-body').innerHTML =
+    '<div><div class="sec-label">案件詳細</div><div class="detail-grid">'+
+    '<div class="detail-field"><div class="detail-field-label">事業所</div><div class="detail-field-value">'+(p.jigyosho||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">ステータス</div><div class="detail-field-value">'+(p.status||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">サービス種別</div><div class="detail-field-value">'+(p.service||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">支援時間/月</div><div class="detail-field-value">'+(p.hours||'—')+'h</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">最寄り駅</div><div class="detail-field-value">'+(p.nearStation||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">日勤/夜勤</div><div class="detail-field-value">'+(p.shiftType||'—')+'</div></div>'+
+    '<div class="detail-field" style="grid-column:1/-1"><div class="detail-field-label">医療的ケア</div><div class="detail-field-value">'+(p.medicalCare||'—')+'</div></div>'+
+    '<div class="detail-field" style="grid-column:1/-1"><div class="detail-field-label">緊急連絡先</div><div class="detail-field-value">'+(p.emergencyName||'—')+(p.emergencyTel?' ／ '+p.emergencyTel:'')+'</div></div>'+
+    '</div></div>'+
+    '<div><div class="sec-label">過去の営業記録</div><div style="font-size:12px;color:#888">読み込み中...</div></div>';
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeModal(e) {
+  if(!e || e.target===document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').classList.remove('open');
 }
 
 loadDashboard();
