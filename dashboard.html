@@ -64,16 +64,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .app-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px}
 .section{display:none}
 .section.active{display:flex;flex-direction:column;gap:14px}
-.tl-scroll{height:320px;overflow-y:auto}
+.tl-scroll{height:360px;overflow-y:auto}
 .tl-wrap{position:relative;padding-left:24px;padding-right:4px;padding-top:4px}
 .tl-line{position:absolute;left:6px;top:6px;bottom:0;width:1.5px;background:#E0E0E0}
-.tl-item{position:relative;margin-bottom:16px}
-.tl-dot{position:absolute;left:-24px;top:4px;width:13px;height:13px;border-radius:50%;background:#1D9E75;border:2.5px solid #F2F2F7;z-index:1}
-.tl-date{font-size:11px;color:#888;margin-bottom:3px}
-.tl-eigyo{font-size:13px;font-weight:600;margin-bottom:3px;color:#1A1A1A}
-.tl-staff{font-size:11px;color:#1D9E75;margin-bottom:3px}
-.tl-memo{font-size:12px;color:#666;line-height:1.6;max-height:2.5em;overflow:hidden;cursor:pointer;position:relative}
-.tl-memo.expanded{max-height:none}
+.tl-item{position:relative;margin-bottom:12px;background:#fff;border:0.5px solid #E8E8E8;border-radius:10px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tl-item:active{opacity:.75}
+.tl-dot{position:absolute;left:-21px;top:16px;width:13px;height:13px;border-radius:50%;background:#1D9E75;border:2.5px solid #F2F2F7;z-index:1}
+.tl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.tl-date{font-size:11px;color:#888}
+.tl-staff{font-size:11px;color:#1D9E75;font-weight:600}
+.tl-badges{display:flex;gap:5px}
+.tl-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
+.tl-badge-e{background:#E1F5EE;color:#085041}
+.tl-badge-a{background:#E6F1FB;color:#0C447C}
+.tl-preview{font-size:12px;color:#888;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
 .loading-wrap{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50}
 .loading-spinner{width:36px;height:36px;border:3px solid #E0E0E0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -693,7 +697,12 @@ function renderTimeline() {
   var nippouAll = [];
   dashData.nippouStatus.forEach(function(s){
     if(staff!=='all' && s.name!==staff) return;
-    if(s.reports) s.reports.forEach(function(r){nippouAll.push({staff:s.name,jigyosho:s.jigyosho,date:r.date,items:r.items});});
+    if(s.reports) s.reports.forEach(function(r){
+      nippouAll.push({
+        staff: s.name, jigyosho: s.jigyosho,
+        date: r.date, items: r.items || [], bikou: r.bikou || ''
+      });
+    });
   });
 
   var filtered = nippouAll.filter(function(n){
@@ -704,6 +713,9 @@ function renderTimeline() {
     return true;
   }).sort(function(a,b){return b.date.localeCompare(a.date);});
 
+  // タップ用にキャッシュ
+  window._tlData = filtered;
+
   var wrap = document.getElementById('tl-wrap');
   if(!filtered.length){
     wrap.innerHTML='<div style="padding:16px;font-size:13px;color:#888">日報がありません</div>';
@@ -712,32 +724,78 @@ function renderTimeline() {
 
   var html='<div class="tl-line"></div>';
   filtered.forEach(function(n,i){
-    var itemsHTML='';
-    if(n.items && n.items.length){
-      n.items.forEach(function(item){
-        itemsHTML+='<div style="margin-top:4px;padding:6px 8px;background:#F9F9F9;border-radius:6px">'+
-          '<div style="font-size:12px;font-weight:600;color:#1A1A1A">'+item.name+'</div>'+
-          '<div style="font-size:12px;color:#666;line-height:1.6;margin-top:2px">'+item.memo+'</div>'+
-        '</div>';
-      });
+    // 営業件数・案件更新件数を集計
+    var eigyoCount  = n.items.filter(function(it){return it.type==='営業';}).length;
+    var ankenCount  = n.items.filter(function(it){return it.type==='案件';}).length;
+    // メモ冒頭（最初の営業アイテムのmemo）
+    var firstMemo = '';
+    for(var j=0;j<n.items.length;j++){
+      if(n.items[j].memo){firstMemo=n.items[j].memo;break;}
     }
-    html+='<div class="tl-item">'+
+
+    var badges='';
+    if(eigyoCount>0) badges+='<span class="tl-badge tl-badge-e">営業 '+eigyoCount+'件</span>';
+    if(ankenCount>0) badges+='<span class="tl-badge tl-badge-a">案件 '+ankenCount+'件</span>';
+
+    html+='<div class="tl-item" onclick="openTlModal('+i+')">'+
       '<div class="tl-dot"></div>'+
-      '<div class="tl-date">'+n.date+'</div>'+
-      (staff==='all'?'<div class="tl-staff">'+n.staff+' （'+n.jigyosho+'）</div>':'')+
-      '<div class="tl-eigyo" onclick="toggleTlMemo('+i+')">'+
-        (n.items&&n.items.length?n.items[0].name:'—') +
-        (n.items&&n.items.length>1?' 他'+(n.items.length-1)+'件':'') +
+      '<div class="tl-head">'+
+        '<div>'+
+          '<div class="tl-date">'+n.date+(staff==='all'?' &nbsp;'+n.staff+' ('+n.jigyosho+')':'')+'</div>'+
+        '</div>'+
+        '<div class="tl-badges">'+badges+'</div>'+
       '</div>'+
-      '<div class="tl-memo" id="tlm-'+i+'" style="display:none">'+itemsHTML+'</div>'+
+      (firstMemo?'<div class="tl-preview">'+firstMemo+'</div>':'')+
     '</div>';
   });
   wrap.innerHTML = html;
 }
 
-function toggleTlMemo(i){
-  var el=document.getElementById('tlm-'+i);
-  if(el) el.style.display = el.style.display==='none'?'block':'none';
+function openTlModal(i) {
+  var n = (window._tlData||[])[i];
+  if(!n) return;
+
+  var eigyoItems = n.items.filter(function(it){return it.type==='営業';});
+  var ankenItems = n.items.filter(function(it){return it.type==='案件';});
+
+  var body='';
+
+  // 営業記録
+  if(eigyoItems.length){
+    body+='<div><div class="sec-label">営業記録</div>';
+    eigyoItems.forEach(function(it){
+      body+='<div style="border-left:3px solid #1D9E75;padding:6px 0 6px 12px;margin-bottom:8px">'+
+        '<div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:3px">'+it.name+'</div>'+
+        (it.memo?'<div style="font-size:12px;color:#555;line-height:1.7">'+it.memo+'</div>':'')+
+      '</div>';
+    });
+    body+='</div>';
+  }
+
+  // 案件更新
+  if(ankenItems.length){
+    body+='<div><div class="sec-label">案件更新</div>';
+    ankenItems.forEach(function(it){
+      body+='<div style="border-left:3px solid #378ADD;padding:6px 0 6px 12px;margin-bottom:8px">'+
+        '<div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:3px">'+it.name+'</div>'+
+        (it.memo?'<div style="font-size:12px;color:#555;line-height:1.7">'+it.memo+'</div>':'')+
+      '</div>';
+    });
+    body+='</div>';
+  }
+
+  // 備考
+  if(n.bikou){
+    body+='<div><div class="sec-label">備考</div>'+
+      '<div style="background:#F9F9F9;border-radius:8px;padding:10px 12px;font-size:13px;color:#555;line-height:1.7">'+n.bikou+'</div>'+
+    '</div>';
+  }
+
+  if(!body) body='<div style="font-size:13px;color:#888">詳細情報がありません</div>';
+
+  document.getElementById('modal-title').textContent = n.date + '　' + n.staff;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-bg').classList.add('open');
 }
 
 var pipelineCache=[];
