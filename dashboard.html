@@ -1,1332 +1,830 @@
-/**
- * ============================================================
- * 日報管理システム - GAS APIコード（修正版 v2）
- * ============================================================
- * 【変更点】
- * - DATA_ROW を 5→4 に修正（データが4行目から始まるため）
- * - 送信完了時にメール通知を追加
- * - doGet を差し替え版に統合済み
- * ============================================================
- */
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ダッシュボード</title>
+<script>
+(function(){
+  function fix(){
+    var s=document.createElement('style');
+    s.innerHTML='html{font-size:15px!important;-webkit-text-size-adjust:100%!important}body,input,select,button{font-size:15px!important}';
+    document.head.appendChild(s);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
+  else fix();
+  setTimeout(fix,500);
+  setTimeout(fix,1500);
+})();
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%!important;font-size:15px!important}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:15px;background:#F2F2F7;color:#1A1A1A;-webkit-text-size-adjust:100%}
+.header{background:#fff;border-bottom:0.5px solid #E0E0E0;padding:12px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:17px;font-weight:600}
+.header-month{font-size:12px;color:#888;background:#F5F5F5;padding:3px 10px;border-radius:20px}
+.tabs{background:#fff;border-bottom:0.5px solid #E0E0E0;display:flex;overflow-x:auto;scrollbar-width:none;position:sticky;top:52px;z-index:9}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 12px;font-size:13px;color:#888;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.active{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:600}
+.content{padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}
+.sec-label{font-size:11px;font-weight:600;color:#888;letter-spacing:0.05em;margin-bottom:6px}
+.metric-card{background:#F5F5F5;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.metric-label{font-size:13px;color:#555;margin-bottom:4px}
+.metric-value{font-size:22px;font-weight:600;color:#1A1A1A}
+.breakdown{display:flex;margin-top:8px;padding-top:8px;border-top:0.5px solid #E0E0E0}
+.bitem{flex:1}
+.bitem:first-child{border-right:0.5px solid #E0E0E0;padding-right:10px;margin-right:10px}
+.bl{font-size:10px;padding:2px 7px;border-radius:20px;display:inline-block;margin-bottom:3px;font-weight:600}
+.bl.ko{background:#E1F5EE;color:#085041}
+.bl.ku{background:#E6F1FB;color:#0C447C}
+.bv{font-size:15px;font-weight:500;color:#888}
+.card{background:#fff;border:0.5px solid #E8E8E8;border-radius:12px;padding:14px 16px}
+.chart-h{position:relative;width:100%}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#888}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.fb{font-size:12px;padding:4px 11px;border-radius:20px;border:1px solid #E0E0E0;background:none;cursor:pointer;color:#888;font-family:inherit}
+.fb.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.status-grid{display:flex;flex-direction:column;gap:7px}
+.status-row{display:flex;align-items:center;gap:8px}
+.status-label{font-size:11px;color:#888;width:88px;flex-shrink:0}
+.status-bar-wrap{flex:1;background:#F0F0F0;border-radius:4px;height:6px;overflow:hidden}
+.status-bar{height:100%;border-radius:4px}
+.status-count{font-size:11px;font-weight:600;min-width:26px;text-align:right}
+.pipeline-item{background:#F9F9F9;border-radius:10px;padding:10px 12px;display:flex;gap:8px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pipeline-item:active{opacity:.7}
+.pbadge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;display:inline-block;margin-top:3px}
+.nippou-count{font-size:14px;font-weight:600;color:#1D9E75}
+.status-list-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #F0F0F0}
+.status-list-row:last-child{border-bottom:none}
+.app-card{background:#fff;border:0.5px solid #E8E8E8;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;-webkit-tap-highlight-color:transparent}
+.app-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px}
+.section{display:none}
+.section.active{display:flex;flex-direction:column;gap:14px}
+.tl-scroll{height:360px;overflow-y:auto}
+.tl-wrap{position:relative;padding-left:24px;padding-right:4px;padding-top:4px}
+.tl-line{position:absolute;left:6px;top:6px;bottom:0;width:1.5px;background:#E0E0E0}
+.tl-item{position:relative;margin-bottom:12px;background:#fff;border:0.5px solid #E8E8E8;border-radius:10px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tl-item:active{opacity:.75}
+.tl-dot{position:absolute;left:-21px;top:16px;width:13px;height:13px;border-radius:50%;background:#1D9E75;border:2.5px solid #F2F2F7;z-index:1}
+.tl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.tl-date{font-size:11px;color:#888}
+.tl-staff{font-size:11px;color:#1D9E75;font-weight:600}
+.tl-badges{display:flex;gap:5px}
+.tl-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
+.tl-badge-e{background:#E1F5EE;color:#085041}
+.tl-badge-a{background:#E6F1FB;color:#0C447C}
+.tl-preview{font-size:12px;color:#888;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px}
+.loading-wrap{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50}
+.loading-spinner{width:36px;height:36px;border:3px solid #E0E0E0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;color:#888}
+.error-wrap{text-align:center;padding:40px 20px;color:#888;font-size:14px;line-height:1.8}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto}
+.modal-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #E8E8E8;position:sticky;top:0;background:#fff}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:50%;border:0.5px solid #E0E0E0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#888;line-height:1}
+.modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.detail-field{display:flex;flex-direction:column;gap:3px}
+.detail-field-label{font-size:11px;color:#888}
+.detail-field-value{font-size:13px;font-weight:500;color:#1A1A1A}
+.history-item{border-left:2px solid #E0E0E0;padding:4px 0 4px 12px;margin-bottom:10px}
+.history-date{font-size:11px;color:#888;margin-bottom:2px}
+.history-eigyo{font-size:12px;font-weight:600;margin-bottom:2px;color:#1A1A1A}
+.history-memo{font-size:12px;color:#666;line-height:1.6}
+</style>
+</head>
+<body>
 
-// ── 設定 ──────────────────────────────────────────────────────
-// 送信完了メールの宛先（複数の場合はカンマ区切り）
-const NOTIFY_EMAILS = 'kay.suzuki.personal@gmail.com,ys.koshigaya@ripplecare.co.jp,ys.kumagaya@ripplecare.co.jp,keisuke.suzuki@ripplecare.co.jp,ayako.mitake.5582@eustylelab.co.jp';
+<div class="header">
+  <div class="header-title">ダッシュボード</div>
+  <div class="header-month" id="header-month">読み込み中...</div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('eigyo')">営業状況</div>
+  <div class="tab" onclick="switchTab('kyushoku')">求職者管理</div>
+  <div class="tab" onclick="switchTab('anken')">案件状況</div>
+  <div class="tab" onclick="switchTab('nippou')">日報</div>
+  <div class="tab" onclick="switchTab('apps')">アプリ</div>
+</div>
 
-// シート名定義
-const SHEETS = {
-  EMPLOYEE : '従業員マスター',
-  EIGYO    : '営業先マスター',
-  ANKEN    : '案件マスター',
-  USER     : '利用者マスター',
-  LINK     : '紐づきマスター',
-  NPH      : '日報ヘッダー',
-  NPD      : '日報明細',
-  KYUSHOKU : '求職者マスター',
-};
+<div class="content" id="dash-content" style="display:none">
 
-// データ開始行（1:タイトル 2:ヘッダー 3:ガイド → 4行目から実データ）
-const DATA_ROW = 4;
+  <!-- 営業状況 -->
+  <div class="section active" id="sec-eigyo">
+    <div>
+      <div class="sec-label">今月のサマリー</div>
+      <div class="metric-card">
+        <div class="metric-label">営業回数</div>
+        <div class="metric-value" id="s-eigyo-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="s-eigyo-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="s-eigyo-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">新規相談数</div>
+        <div class="metric-value" id="s-sodan-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="s-sodan-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="s-sodan-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">反響率（新規相談 ÷ 営業回数）</div>
+        <div class="metric-value" id="s-hankyou-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="s-hankyou-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="s-hankyou-ku">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">担当者別営業回数（今月）</div>
+      <div class="filter-row" id="staff-filter">
+        <button class="fb active" onclick="filterStaff(this,'all')">全員</button>
+        <button class="fb" onclick="filterStaff(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterStaff(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="chart-h" id="staff-wrap" style="height:140px">
+        <canvas id="chart-staff" role="img" aria-label="担当者別営業回数">担当者別営業回数</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">月次推移（営業回数・反響率）</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷 営業</span>
+        <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷 営業</span>
+        <span class="leg"><span class="leg-dot" style="background:#1D9E75;border-radius:50%"></span>越谷 反響率</span>
+        <span class="leg"><span class="leg-dot" style="background:#378ADD;border-radius:50%"></span>熊谷 反響率</span>
+        <span class="leg"><span class="leg-dot" style="background:#888;border-radius:50%"></span>合算</span>
+      </div>
+      <div class="chart-h" style="height:180px">
+        <canvas id="chart-trend" role="img" aria-label="月次営業推移">月次推移</canvas>
+      </div>
+    </div>
+  </div>
 
-// ============================================================
-// HTTPリクエスト受付
-// ============================================================
+  <!-- 求職者管理 -->
+  <div class="section" id="sec-kyushoku">
+    <div>
+      <div class="sec-label">サマリー</div>
+      <div class="metric-card">
+        <div class="metric-label">累計求職者数</div>
+        <div class="metric-value" id="k-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">今月の応募数</div>
+        <div class="metric-value" id="k-oubo">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-oubo-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-oubo-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">今月の採用数</div>
+        <div class="metric-value" id="k-saiyo">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-saiyo-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-saiyo-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">採用率（採用 ÷ 応募）</div>
+        <div class="metric-value" id="k-rate">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="k-rate-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="k-rate-ku">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">応募数・採用数・採用率の月次推移</div>
+      <div class="filter-row" id="kyu-trend-filter">
+        <button class="fb active" onclick="filterKyuTrend(this,'all')">全体</button>
+        <button class="fb" onclick="filterKyuTrend(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterKyuTrend(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#888780"></span>応募数</span>
+        <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>採用数</span>
+        <span class="leg"><span class="leg-dot" style="background:#BA7517;border-radius:50%"></span>採用率</span>
+      </div>
+      <div class="chart-h" style="height:160px">
+        <canvas id="chart-kyu-trend" role="img" aria-label="求職者月次推移">求職者月次推移</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">選考ステータス別件数</div>
+      <div class="filter-row" id="kyu-status-filter">
+        <button class="fb active" onclick="filterKyuStatus(this,'all')">全体</button>
+        <button class="fb" onclick="filterKyuStatus(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterKyuStatus(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="status-grid" id="kyushoku-status-grid"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="sec-label" style="margin-bottom:0">Indeed情報登録 — 入力待ち一覧</div>
+        <div id="indeed-count" style="font-size:11px;color:#888"></div>
+      </div>
+      <div id="indeed-list"></div>
+      <a href="https://script.google.com/macros/s/AKfycbzY2zAawKaY4XpH6HoBtrgqZVzu0aOQtjUbf-90ZsZFQ4i-EGWGOSskBXm4qfWSTUQX/exec" target="_blank" style="text-decoration:none;display:block;margin-top:8px">
+        <div style="width:100%;padding:11px;border-radius:10px;border:1px solid #E0E0E0;background:none;font-family:inherit;font-size:13px;color:#1D9E75;text-align:center;font-weight:600">
+          求職者管理アプリで全件確認 ›
+        </div>
+      </a>
+    </div>
+  </div>
 
-function doGet(e) {
-  try {
-    // eやparameterがundefinedの場合に備えて安全に取得
-    const params  = (e && e.parameter) ? e.parameter : {};
-    const action  = params.action  || '';
-    const payload = params.payload || '';
+  <!-- 案件状況 -->
+  <div class="section" id="sec-anken">
+    <div>
+      <div class="sec-label">サマリー</div>
+      <div class="metric-card">
+        <div class="metric-label">現在の利用者数</div>
+        <div class="metric-value" id="a-users-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="a-users-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="a-users-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">月次売上予想</div>
+        <div class="metric-value" id="a-sales-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="a-sales-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="a-sales-ku">—</div></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">パイプライン概算</div>
+        <div class="metric-value" id="a-pipeline-total">—</div>
+        <div class="breakdown">
+          <div class="bitem"><span class="bl ko">越谷</span><div class="bv" id="a-pipeline-ko">—</div></div>
+          <div class="bitem"><span class="bl ku">熊谷</span><div class="bv" id="a-pipeline-ku">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">案件ステータス別件数</div>
+      <div class="filter-row" id="status-filter">
+        <button class="fb active" onclick="filterStatus(this,'both')">両事業所</button>
+        <button class="fb" onclick="filterStatus(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterStatus(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="status-grid" id="status-grid"></div>
+    </div>
+    <div class="card">
+      <div class="sec-label">パイプライン（タップで詳細）</div>
+      <div id="pipeline-list"></div>
+    </div>
+    <div class="card">
+      <div class="sec-label">利用者別月次売上</div>
+      <div class="filter-row" id="user-filter">
+        <button class="fb active" onclick="filterUser(this,'all')">全員</button>
+        <button class="fb" onclick="filterUser(this,'越谷')">越谷</button>
+        <button class="fb" onclick="filterUser(this,'熊谷')">熊谷</button>
+      </div>
+      <div class="chart-h" id="user-wrap" style="height:200px">
+        <canvas id="chart-users" role="img" aria-label="利用者別売上">利用者別売上</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label">利用者数の月次推移</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>越谷</span>
+        <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>熊谷</span>
+      </div>
+      <div class="chart-h" style="height:140px">
+        <canvas id="chart-user-trend" role="img" aria-label="利用者数推移">利用者数推移</canvas>
+      </div>
+    </div>
+  </div>
 
-    // パラメータが何もなければHTMLフォームを返す
-    if (!action && !payload) {
-      const page = params.page || '';
-      if (page === 'dashboard') {
-        var dd  = getDashboard({});
-        var enc = Utilities.base64Encode(JSON.stringify(dd), Utilities.Charset.UTF_8);
-        var ho  = HtmlService.createHtmlOutputFromFile('dashboard');
-        var src = ho.getContent();
-        // scriptタグを避けてhidden divにBase64データを格納
-        var div = '<div id="_dashdata" style="display:none">' + enc + '</div>';
-        ho.setContent(src.replace('<body>', '<body>' + div));
-        ho.setTitle('ダッシュボード');
-        ho.addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-        ho.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-        return ho;
-      }
-      const html = HtmlService.createHtmlOutputFromFile('index');
-      html.setTitle('日報フォーム');
-      html.addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-      html.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-      return html;
+  <!-- 日報 -->
+  <div class="section" id="sec-nippou">
+    <div class="card">
+      <div class="filter-row" style="margin-bottom:8px">
+        <button class="fb active" onclick="filterNippouPeriod(this,'month')">今月</button>
+        <button class="fb" onclick="filterNippouPeriod(this,'week')">今週</button>
+        <button class="fb" onclick="filterNippouPeriod(this,'last')">先週</button>
+      </div>
+      <select id="staff-select" onchange="renderTimeline()" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid #E0E0E0;background:#fff;font-family:inherit;font-size:14px;color:#1A1A1A;-webkit-appearance:none">
+        <option value="all">全員</option>
+      </select>
+    </div>
+    <div>
+      <div class="sec-label" id="tl-label">日報タイムライン（今月）</div>
+      <div class="tl-scroll">
+        <div class="tl-wrap" id="tl-wrap"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-label" style="margin-bottom:8px">今月の提出状況</div>
+      <div id="nippou-status-list"></div>
+    </div>
+  </div>
+
+  <!-- アプリ -->
+  <div class="section" id="sec-apps">
+    <div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">
+      <a href="https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec" target="_blank" style="text-decoration:none">
+        <div class="app-card">
+          <div class="app-icon" style="background:#E1F5EE">📋</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">日報フォーム</div><div style="font-size:12px;color:#888">営業記録・案件管理の日報を入力</div></div>
+          <div style="color:#ccc;font-size:20px">›</div>
+        </div>
+      </a>
+      <a href="https://script.google.com/macros/s/AKfycbzY2zAawKaY4XpH6HoBtrgqZVzu0aOQtjUbf-90ZsZFQ4i-EGWGOSskBXm4qfWSTUQX/exec" target="_blank" style="text-decoration:none">
+        <div class="app-card">
+          <div class="app-icon" style="background:#E6F1FB">👤</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">求職者管理アプリ</div><div style="font-size:12px;color:#888">求職者の登録・選考管理</div></div>
+          <div style="color:#ccc;font-size:20px">›</div>
+        </div>
+      </a>
+      <a href="https://www.google.com/maps/d/u/0/edit?mid=1YQSYsHCQAnPwvvESIaiBVJNpCbxpfNE&usp=sharing" target="_blank" style="text-decoration:none">
+        <div class="app-card">
+          <div class="app-icon" style="background:#FAEEDA">📍</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#1A1A1A;margin-bottom:3px">営業マップ</div><div style="font-size:12px;color:#888">Google My Maps で営業先を確認</div></div>
+          <div style="color:#ccc;font-size:20px">›</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="loading-wrap" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-txt">データを読み込んでいます...</div>
+</div>
+
+<!-- 案件詳細モーダル -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">案件詳細</div>
+      <button class="modal-close" onclick="closeModal()" aria-label="閉じる">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbz1nXs8HT_KpFFO47vO70Ir5mlcw76AUD2mR7Ron0RIzda_SJrC8qsuPortoLFLxvtlPg/exec';
+var TEAL='#1D9E75', BLUE='#378ADD', AMBER='#BA7517', RED='#E24B4A', GRAY='#888780';
+var PURPLE='#7F77DD';
+var gridColor='rgba(120,120,120,0.1)', tickColor='#888';
+var staffChart=null, trendChart=null, kyuChart=null, userChart=null, userTrendChart=null;
+var dashData=null;
+var nippouPeriod='month';
+
+function loadDashboard() {
+  var cbName = '_cb' + Date.now();
+  window[cbName] = function(b64) {
+    try {
+      var dec = atob(b64);
+      var utf8 = decodeURIComponent(escape(dec));
+      dashData = JSON.parse(utf8);
+      renderAll(dashData);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('dash-content').style.display = 'flex';
+    } catch(e) {
+      document.getElementById('loading').innerHTML = '<div class="error-wrap">表示エラー：' + e.message + '</div>';
     }
-
-    // payloadがある場合はPOST相当の処理
-    if (payload) {
-      const body = JSON.parse(payload);
-      const act  = body.action || '';
-      let result;
-      if      (act === 'report')       result = saveReport(body);
-      else if (act === 'master')       result = saveMaster(body);
-      else if (act === 'updateAnken')  result = updateAnken(body);
-      else result = { error: '不明なアクション: ' + act };
-      return jsonResponse(result);
-    }
-
-    // actionがある場合はGET APIとして動作
-    let result;
-    if      (action === 'masters')   result = getMasters();
-    else if (action === 'history')   result = getHistory(params.type, params.id);
-    else if (action === 'dashboard') result = getDashboard(params);
-    else result = { error: '不明なアクション: ' + action };
-
-    // JSONPコールバックがある場合（GitHub PagesからのCORS回避）
-    const callback = params.callback || '';
-    if (callback) {
-      // データをBase64エンコードしてJSONP経由で安全に渡す
-      const encoded = Utilities.base64Encode(
-        JSON.stringify(result), Utilities.Charset.UTF_8
-      );
-      const safe = callback + '("' + encoded + '")';
-      return ContentService
-        .createTextOutput(safe)
-        .setMimeType(ContentService.MimeType.JAVASCRIPT);
-    }
-    return jsonResponse(result);
-
-  } catch (err) {
-    Logger.log('doGet error: ' + err.message);
-    return jsonResponse({ error: err.message });
-  }
-}
-
-function doPost(e) {
-  try {
-    const body   = JSON.parse(e.postData.contents);
-    const action = body.action || '';
-    let result;
-    if      (action === 'report')      result = saveReport(body);
-    else if (action === 'master')      result = saveMaster(body);
-    else if (action === 'updateAnken') result = updateAnken(body);
-    else result = { error: '不明なアクション: ' + action };
-    return jsonResponse(result);
-  } catch (err) {
-    Logger.log('doPost error: ' + err.message);
-    return jsonResponse({ error: err.message });
-  }
-}
-
-function jsonResponse(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-// ============================================================
-// GET /masters - 全マスターデータを一括取得
-// ============================================================
-
-function getMasters() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  return {
-    employees : readSheet(ss, SHEETS.EMPLOYEE, employeeMap),
-    eigyos    : readSheet(ss, SHEETS.EIGYO,    eigyoMap),
-    ankens    : readSheet(ss, SHEETS.ANKEN,     ankenMap),
-    users     : readSheet(ss, SHEETS.USER,      userMap),
-    links     : readSheet(ss, SHEETS.LINK,      linkMap),
+    delete window[cbName];
+    if (s && s.parentNode) s.parentNode.removeChild(s);
   };
-}
-
-// ── 各シートの行→オブジェクト変換 ──
-
-function employeeMap(r) {
-  return {
-    id        : r[0],
-    name      : r[1],
-    nameKana  : r[2],
-    jigyosho  : r[3],
-    active    : r[4],
-    createdAt : fmtDate(r[5]),
-    memo      : r[6],
+  var s = document.createElement('script');
+  s.onerror = function() {
+    document.getElementById('loading').innerHTML = '<div class="error-wrap">接続エラー。再読み込みしてください。</div>';
   };
+  s.src = API_URL + '?action=dashboard&callback=' + cbName;
+  document.body.appendChild(s);
 }
 
-function eigyoMap(r) {
-  return {
-    id        : r[0],
-    name      : r[1],
-    tel       : r[2],
-    fax       : r[3],
-    address   : r[4],
-    lat       : r[5],
-    lng       : r[6],
-    jigyosho  : r[7],
-    createdAt : fmtDate(r[8]),
-    memo      : r[9],
-  };
+function renderAll(d) {
+  document.getElementById('header-month').textContent = d.year + '年' + d.month;
+  var s = d.summary;
+  // 営業状況
+  document.getElementById('s-eigyo-total').textContent = s.eigyo.total + '回';
+  document.getElementById('s-eigyo-ko').textContent    = s.eigyo.ko + '回';
+  document.getElementById('s-eigyo-ku').textContent    = s.eigyo.ku + '回';
+  var sodanTotal = (d.statusCounts.both['サービス相談']||0);
+  var sodanKo    = (d.statusCounts['越谷']['サービス相談']||0);
+  var sodanKu    = (d.statusCounts['熊谷']['サービス相談']||0);
+  document.getElementById('s-sodan-total').textContent = sodanTotal + '件';
+  document.getElementById('s-sodan-ko').textContent    = sodanKo + '件';
+  document.getElementById('s-sodan-ku').textContent    = sodanKu + '件';
+  var rTotal = s.eigyo.total ? Math.round(sodanTotal/s.eigyo.total*1000)/10 : 0;
+  var rKo    = s.eigyo.ko    ? Math.round(sodanKo/s.eigyo.ko*1000)/10       : 0;
+  var rKu    = s.eigyo.ku    ? Math.round(sodanKu/s.eigyo.ku*1000)/10       : 0;
+  document.getElementById('s-hankyou-total').textContent = rTotal + '%';
+  document.getElementById('s-hankyou-ko').textContent    = rKo + '%';
+  document.getElementById('s-hankyou-ku').textContent    = rKu + '%';
+  // 求職者
+  var k = d.kyushoku;
+  document.getElementById('k-total').textContent    = k.total + '名';
+  document.getElementById('k-ko').textContent       = k.ko + '名';
+  document.getElementById('k-ku').textContent       = k.ku + '名';
+  document.getElementById('k-oubo').textContent     = k.thisMonthOubo + '名';
+  document.getElementById('k-oubo-ko').textContent  = '—';
+  document.getElementById('k-oubo-ku').textContent  = '—';
+  document.getElementById('k-saiyo').textContent    = k.thisMonthSaiyo + '名';
+  document.getElementById('k-saiyo-ko').textContent = '—';
+  document.getElementById('k-saiyo-ku').textContent = '—';
+  var kRate = k.thisMonthOubo ? Math.round(k.thisMonthSaiyo/k.thisMonthOubo*1000)/10 : 0;
+  document.getElementById('k-rate').textContent     = kRate + '%';
+  document.getElementById('k-rate-ko').textContent  = '—';
+  document.getElementById('k-rate-ku').textContent  = '—';
+  // 案件
+  document.getElementById('a-users-total').textContent    = s.users.total + '名';
+  document.getElementById('a-users-ko').textContent       = s.users.ko + '名';
+  document.getElementById('a-users-ku').textContent       = s.users.ku + '名';
+  document.getElementById('a-sales-total').textContent    = s.sales.total + '万円';
+  document.getElementById('a-sales-ko').textContent       = s.sales.ko + '万円';
+  document.getElementById('a-sales-ku').textContent       = s.sales.ku + '万円';
+  document.getElementById('a-pipeline-total').textContent = s.pipeline.total + '万円';
+  document.getElementById('a-pipeline-ko').textContent    = s.pipeline.ko + '万円';
+  document.getElementById('a-pipeline-ku').textContent    = s.pipeline.ku + '万円';
+  buildStaffChart(d.staffRanking);
+  buildTrendChart(d.trendMonthly);
+  buildKyuChart('all');
+  renderKyuStatus('all');
+  renderStatus('both');
+  renderPipeline(d.pipelineItems);
+  buildUserChart('all');
+  buildUserTrendChart(d.userTrend);
+  renderNippouStatus(d.nippouStatus);
+  buildStaffSelect(d.staffRanking);
+  renderTimeline();
+  renderIndeedList(d.kyushoku.indeedList);
 }
 
-function ankenMap(r) {
-  return {
-    id              : r[0],
-    userId          : r[1],
-    userName        : r[2],
-    hoursMonth      : r[3],
-    eigyoId         : r[4],
-    status          : r[5],
-    receivedAt      : fmtDate(r[6]),
-    jigyosho        : r[7],
-    nearStation     : r[8],
-    medicalCare     : r[9],
-    shiftType       : r[10],
-    jobPosting      : r[11],
-    staffId         : r[12],
-    createdAt       : fmtDate(r[13]),
-    memo            : r[14],
-    serviceType     : r[17],  // R列(18列目)：サービス種別
-    emergencyName   : r[18],  // S列(19列目)：緊急連絡先名称
-    emergencyTel    : r[19],  // T列(20列目)：緊急連絡先電話
-  };
+function switchTab(tab) {
+  var names = ['eigyo','kyushoku','anken','nippou','apps'];
+  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',names[i]===tab);});
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  var el = document.getElementById('sec-'+tab);
+  if(el) el.classList.add('active');
 }
 
-function userMap(r) {
-  return {
-    id       : r[0],
-    name     : r[1],
-    nameKana : r[2],
-    address  : r[3],
-  };
-}
-
-function linkMap(r) {
-  return {
-    id        : r[0],
-    eigyoId   : r[1],
-    ankenId   : r[2],
-    userId    : r[3],
-    staffId   : r[4],
-    createdAt : fmtDate(r[5]),
-    memo      : r[6],
-  };
-}
-
-// ============================================================
-// GET /history - 過去の日報記録を時系列取得
-// ============================================================
-
-function getHistory(type, id) {
-  if (!type || !id) return { error: 'type と id は必須です' };
-
-  const ss      = SpreadsheetApp.getActiveSpreadsheet();
-  const npdSheet = ss.getSheetByName(SHEETS.NPD);
-  const npdRows  = getDataRows(npdSheet);
-  const typeLabel = type === 'eigyo' ? '営業' : type === 'anken' ? '案件' : '利用者';
-
-  const matched = npdRows
-    .filter(r => r[2] === typeLabel && r[3] === id)
-    .map(r => ({
-      nphId     : r[1],
-      memo      : r[5],
-      visitFlag : r[6],
-      createdAt : fmtDate(r[7]),
-    }));
-
-  const nphSheet = ss.getSheetByName(SHEETS.NPH);
-  const nphRows  = getDataRows(nphSheet);
-  const nphMap   = {};
-  nphRows.forEach(r => { nphMap[r[0]] = { date: fmtDate(r[1]), staffName: r[3], jigyosho: r[4] }; });
-
-  const history = matched.map(item => {
-    const header = nphMap[item.nphId] || {};
-    return {
-      date      : header.date || item.createdAt,
-      staffName : header.staffName || '',
-      jigyosho  : header.jigyosho  || '',
-      memo      : item.memo,
-      visitFlag : item.visitFlag,
-    };
-  }).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  return { id, type, history };
-}
-
-// ============================================================
-// POST /report - 日報を保存する
-// ============================================================
-
-function saveReport(body) {
-  const ss  = SpreadsheetApp.getActiveSpreadsheet();
-  const now = new Date();
-
-  // 日報ヘッダーを保存
-  const nphId    = generateId(ss, SHEETS.NPH, 'NPH');
-  const nphSheet = ss.getSheetByName(SHEETS.NPH);
-  nphSheet.appendRow([
-    nphId,
-    body.date,
-    body.staffId,
-    body.staffName,
-    body.jigyosho,
-    body.biko || '',
-    fmtDatetime(now),
-    '送信済み',
-  ]);
-
-  // 日報明細を保存
-  const npdSheet = ss.getSheetByName(SHEETS.NPD);
-
-  (body.eigyos || []).forEach(item => {
-    const npdId = generateId(ss, SHEETS.NPD, 'NPD');
-    npdSheet.appendRow([npdId, nphId, '営業', item.id, item.name, item.memo || '', true, fmtDatetime(now)]);
-  });
-  (body.ankens || []).forEach(item => {
-    const npdId = generateId(ss, SHEETS.NPD, 'NPD');
-    npdSheet.appendRow([npdId, nphId, '案件', item.id, item.name, item.memo || '', false, fmtDatetime(now)]);
-  });
-
-  // 紐づきマスターを更新
-  updateLinks(ss, body.eigyos || [], body.ankens || [], body.staffId, now);
-
-  // 営業先マスターの最終営業情報を更新（My Maps連携用）
-  updateEigyoLatest(ss, body.eigyos || [], body.staffName, body.date, now);
-
-  // 送信完了メールを送信
-  sendNotificationEmail(body, nphId, now);
-
-  return { success: true, nphId, message: '日報を保存しました' };
-}
-
-// ============================================================
-// 営業先マスターの最終営業情報を更新（K・L・M・N列）
-// ============================================================
-function updateEigyoLatest(ss, eigyos, staffName, date, now) {
-  if (!eigyos || eigyos.length === 0) return;
-
-  const ws      = ss.getSheetByName(SHEETS.EIGYO);
-  const lastRow = ws.getLastRow();
-  if (lastRow < DATA_ROW) return;
-
-  const rows = ws.getRange(DATA_ROW, 1, lastRow - DATA_ROW + 1, 1).getValues();
-  const today = new Date();
-
-  eigyos.forEach(eigyo => {
-    const idx = rows.findIndex(r => r[0] === eigyo.id);
-    if (idx < 0) return;
-
-    const rowNum = idx + DATA_ROW;
-    const lastDate = date || fmtDate(now);
-
-    // K列(11)=最終営業日, L列(12)=最終担当者, M列(13)=最新営業メモ
-    ws.getRange(rowNum, 11).setValue(lastDate);
-    ws.getRange(rowNum, 12).setValue(staffName || '');
-    ws.getRange(rowNum, 13).setValue(eigyo.memo || '');
-
-    // N列(14)=経過日数を計算して更新
-    const diffDays = calcDiffDays(lastDate, today);
-    ws.getRange(rowNum, 14).setValue(diffDays + '日経過');
+function buildStaffChart(data) {
+  var h = Math.max(data.length*36+40,100);
+  document.getElementById('staff-wrap').style.height = h+'px';
+  if(staffChart) staffChart.destroy();
+  staffChart = new Chart(document.getElementById('chart-staff'),{
+    type:'bar',
+    data:{labels:data.map(function(d){return d.name;}),datasets:[{data:data.map(function(d){return d.count;}),backgroundColor:data.map(function(d){return d.jigyosho==='越谷'?TEAL:BLUE;}),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},indexAxis:'y',
+      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor}},y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
   });
 }
 
-// ============================================================
-// 全営業先の経過日数を毎日自動更新するトリガー関数
-// Apps Scriptの「トリガー」から毎日実行するよう設定してください
-// ============================================================
-function updateAllEigyoDays() {
-  const ss      = SpreadsheetApp.getActiveSpreadsheet();
-  const ws      = ss.getSheetByName(SHEETS.EIGYO);
-  const lastRow = ws.getLastRow();
-  if (lastRow < DATA_ROW) return;
+function filterStaff(el,jigyo) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  if(!dashData) return;
+  var data = jigyo==='all' ? dashData.staffRanking : dashData.staffRanking.filter(function(s){return s.jigyosho===jigyo;});
+  buildStaffChart(data);
+}
 
-  const today = new Date();
-  const rows  = ws.getRange(DATA_ROW, 1, lastRow - DATA_ROW + 1, 14).getValues();
-
-  rows.forEach((row, idx) => {
-    if (!row[0]) return; // IDが空の行はスキップ
-    const lastDate = row[10]; // K列（インデックス10）=最終営業日
-    if (!lastDate) {
-      ws.getRange(idx + DATA_ROW, 14).setValue('未営業');
-      return;
-    }
-    const diffDays = calcDiffDays(lastDate, today);
-    let label = diffDays + '日経過';
-    if (diffDays >= 30)      label = diffDays + '日経過 ⚠️';
-    else if (diffDays >= 14) label = diffDays + '日経過 📌';
-    ws.getRange(idx + DATA_ROW, 14).setValue(label);
+function buildTrendChart(data) {
+  if(trendChart) trendChart.destroy();
+  var koData=[],kuData=[],koRate=[],kuRate=[],allRate=[];
+  data.forEach(function(d){
+    koData.push(d.ko); kuData.push(d.ku);
+    var rKo=d.ko?Math.round(d.sodanKo/d.ko*1000)/10:0;
+    var rKu=d.ku?Math.round(d.sodanKu/d.ku*1000)/10:0;
+    var rAll=(d.ko+d.ku)?Math.round((d.sodanKo+d.sodanKu)/(d.ko+d.ku)*1000)/10:0;
+    koRate.push(rKo); kuRate.push(rKu); allRate.push(rAll);
   });
-
-  Logger.log('経過日数の更新完了: ' + (lastRow - DATA_ROW + 1) + '件');
-}
-
-// 経過日数を計算するヘルパー関数
-function calcDiffDays(lastDate, today) {
-  const d = new Date(lastDate);
-  if (isNaN(d.getTime())) return 0;
-  const diff = today.getTime() - d.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
-}
-
-// ============================================================
-// My Maps用シート「MapData」を自動生成・更新
-// 毎日のトリガーでupdateAllEigyoDaysと一緒に実行してください
-// ============================================================
-function updateMapDataSheet() {
-  const ss       = SpreadsheetApp.getActiveSpreadsheet();
-  const eigyoWs  = ss.getSheetByName(SHEETS.EIGYO);
-  const lastRow  = eigyoWs.getLastRow();
-  if (lastRow < DATA_ROW) return;
-
-  // MapDataシートを取得または新規作成
-  let mapWs = ss.getSheetByName('MapData');
-  if (!mapWs) {
-    mapWs = ss.insertSheet('MapData');
-  } else {
-    mapWs.clearContents();
-  }
-
-  // ヘッダー行を1行目に設定
-  const headers = ['機関名', '住所', '電話番号', '事業所', '最終営業日', '最終担当者', '最新営業メモ', '経過日数'];
-  mapWs.getRange(1, 1, 1, headers.length).setValues([headers]);
-
-  // 営業先マスターからデータを取得（DATA_ROW行目以降）
-  const srcRows = eigyoWs.getRange(DATA_ROW, 1, lastRow - DATA_ROW + 1, 14).getValues();
-
-  const mapData = [];
-  srcRows.forEach(row => {
-    if (!row[0]) return; // IDが空の行はスキップ
-    mapData.push([
-      row[1],  // B列：機関名
-      row[4],  // E列：住所
-      row[2],  // C列：電話番号
-      row[7],  // H列：事業所
-      row[10], // K列：最終営業日
-      row[11], // L列：最終担当者
-      row[12], // M列：最新営業メモ
-      row[13], // N列：経過日数
-    ]);
-  });
-
-  if (mapData.length > 0) {
-    mapWs.getRange(2, 1, mapData.length, headers.length).setValues(mapData);
-  }
-
-  // ヘッダー行を太字・背景色で見やすく
-  const headerRange = mapWs.getRange(1, 1, 1, headers.length);
-  headerRange.setFontWeight('bold');
-  headerRange.setBackground('#1D9E75');
-  headerRange.setFontColor('#FFFFFF');
-
-  Logger.log('MapDataシート更新完了: ' + mapData.length + '件');
-}
-
-// updateAllEigyoDaysとMapData更新を一括実行するトリガー用関数
-function dailyUpdate() {
-  updateAllEigyoDays();
-  updateMapDataSheet();
-  Logger.log('日次更新完了');
-}
-
-// ============================================================
-// POST /master - 新規マスター登録
-// ============================================================
-
-function saveMaster(body) {
-  const ss  = SpreadsheetApp.getActiveSpreadsheet();
-  const now = new Date();
-
-  if (body.type === 'eigyo') {
-    const id = generateId(ss, SHEETS.EIGYO, 'EIG');
-    const ws = ss.getSheetByName(SHEETS.EIGYO);
-    const coords = geocode(body.address || '');
-    ws.appendRow([id, body.name, body.tel||'', body.fax||'', body.address||'', coords.lat, coords.lng, body.jigyosho||'', fmtDate(now), body.memo||'']);
-    return { success: true, id, message: '営業先を登録しました' };
-  }
-
-  if (body.type === 'anken') {
-    const id = generateId(ss, SHEETS.ANKEN, 'ANK');
-    const ws = ss.getSheetByName(SHEETS.ANKEN);
-    ws.appendRow([
-      id,
-      body.userId        || '',
-      body.userName      || '',
-      body.hoursMonth    || '',
-      body.eigyoId       || '',
-      body.status        || 'サービス相談',
-      body.receivedAt    || fmtDate(now),
-      body.jigyosho      || '',
-      body.nearStation   || '',
-      body.medicalCare   || '',
-      body.shiftType     || '',
-      body.jobPosting    || '',
-      body.staffId       || '',
-      fmtDate(now),
-      body.memo          || '',
-      '',                    // P列：サービス開始日（空欄）
-      '',                    // Q列：サービス終了日（空欄）
-      body.serviceType   || '重度訪問介護',
-      body.emergencyName || '',
-      body.emergencyTel  || '',
-    ]);
-    return { success: true, id, message: '案件を登録しました' };
-  }
-
-  if (body.type === 'user') {
-    const id = generateId(ss, SHEETS.USER, 'USR');
-    const ws = ss.getSheetByName(SHEETS.USER);
-    ws.appendRow([
-      id,
-      body.name     || '',
-      body.nameKana || '',
-      body.address  || '',
-    ]);
-    return { success: true, id, message: '利用者を登録しました' };
-  }
-
-  return { error: '不明なtype: ' + body.type };
-}
-
-// ============================================================
-// 案件情報の更新（フロントから編集された案件を保存）
-// ============================================================
-
-function updateAnken(body) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ws = ss.getSheetByName(SHEETS.ANKEN);
-  const rows = getDataRows(ws);
-  const idx  = rows.findIndex(r => r[0] === body.id);
-  if (idx < 0) return { error: '案件が見つかりません: ' + body.id };
-
-  const rowNum = idx + DATA_ROW;
-  const updates = [
-    body.userId      !== undefined ? body.userId      : rows[idx][1],
-    body.userName    !== undefined ? body.userName    : rows[idx][2],
-    body.hoursMonth  !== undefined ? body.hoursMonth  : rows[idx][3],
-    body.eigyoId     !== undefined ? body.eigyoId     : rows[idx][4],
-    body.status      !== undefined ? body.status      : rows[idx][5],
-    body.receivedAt  !== undefined ? body.receivedAt  : rows[idx][6],
-    body.jigyosho    !== undefined ? body.jigyosho    : rows[idx][7],
-    body.nearStation !== undefined ? body.nearStation : rows[idx][8],
-    body.medicalCare !== undefined ? body.medicalCare : rows[idx][9],
-    body.shiftType   !== undefined ? body.shiftType   : rows[idx][10],
-    body.jobPosting  !== undefined ? body.jobPosting  : rows[idx][11],
-    rows[idx][12],
-    rows[idx][13],
-    body.memo        !== undefined ? body.memo        : rows[idx][14],
-  ];
-  ws.getRange(rowNum, 2, 1, updates.length).setValues([updates]);
-  return { success: true, message: '案件情報を更新しました' };
-}
-
-// ============================================================
-// 紐づきマスター更新
-// ============================================================
-
-function updateLinks(ss, eigyos, ankens, staffId, now) {
-  const linkSheet  = ss.getSheetByName(SHEETS.LINK);
-  const existing   = getDataRows(linkSheet);
-  const existingSet = new Set(existing.map(r => `${r[1]}_${r[2]}_${r[3]}`));
-
-  const combos = [];
-  eigyos.forEach(e => { ankens.forEach(a => combos.push({ eigyoId: e.id, ankenId: a.id, userId: '' })); });
-
-  combos.forEach(c => {
-    const key = `${c.eigyoId}_${c.ankenId}_${c.userId}`;
-    if (existingSet.has(key)) return;
-    const id = generateId(ss, SHEETS.LINK, 'LNK');
-    linkSheet.appendRow([id, c.eigyoId, c.ankenId, c.userId, staffId, fmtDate(now), '']);
-    existingSet.add(key);
+  trendChart = new Chart(document.getElementById('chart-trend'),{
+    type:'bar',
+    data:{labels:data.map(function(d){return d.label;}),datasets:[
+      {label:'越谷',data:koData,backgroundColor:TEAL,borderRadius:3,yAxisID:'y'},
+      {label:'熊谷',data:kuData,backgroundColor:BLUE,borderRadius:3,yAxisID:'y'},
+      {label:'越谷反響率',data:koRate,type:'line',borderColor:TEAL,backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderDash:[5,3]},
+      {label:'熊谷反響率',data:kuRate,type:'line',borderColor:BLUE,backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderDash:[5,3]},
+      {label:'合算反響率',data:allRate,type:'line',borderColor:'#888',backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+        y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor},position:'left'},
+        y2:{beginAtZero:true,position:'right',grid:{display:false},ticks:{font:{size:10},color:'#888',callback:function(v){return v+'%'}}}}}
   });
 }
 
-// ============================================================
-// メール通知
-// ============================================================
-
-function sendNotificationEmail(body, nphId, now) {
-  try {
-    const to      = NOTIFY_EMAILS;
-    const subject = `【日報】${body.date} ${body.staffName}（${body.jigyosho}）`;
-
-    const eigyoLines = (body.eigyos || []).map(e =>
-      `  ■ ${e.name}\n  ${e.memo || '（追記なし）'}`
-    ).join('\n');
-    const ankenLines = (body.ankens || []).map(a =>
-      `  ■ ${a.name} 様\n  ${a.memo || '（追記なし）'}`
-    ).join('\n');
-
-    const text = `
-日報が送信されました。
-
-━━━━━━━━━━━━━━━━━━━━
-日報ID   : ${nphId}
-日付     : ${body.date}
-担当者   : ${body.staffName}
-事業所   : ${body.jigyosho}
-送信日時 : ${fmtDatetime(now)}
-━━━━━━━━━━━━━━━━━━━━
-
-【営業記録】
-${eigyoLines || '（なし）'}
-
-【案件管理】
-${ankenLines || '（なし）'}
-
-【備考・申し送り】
-${body.biko || '（なし）'}
-
-━━━━━━━━━━━━━━━━━━━━
-`.trim();
-
-    MailApp.sendEmail({ to, subject, body: text });
-  } catch (e) {
-    Logger.log('メール送信エラー: ' + e.message);
-  }
-}
-
-// ============================================================
-// ユーティリティ
-// ============================================================
-
-function readSheet(ss, sheetName, mapFn, startRow) {
-  var sr = startRow || DATA_ROW;
-  var ws = ss.getSheetByName(sheetName);
-  if (!ws) return [];
-  var lastRow = ws.getLastRow();
-  if (lastRow < sr) return [];
-  var lastCol = ws.getLastColumn();
-  var rows = ws.getRange(sr, 1, lastRow - sr + 1, lastCol).getValues();
-  return rows.filter(function(r){ return r[0]; }).map(mapFn);
-}
-
-function getDataRows(ws) {
-  const lastRow = ws.getLastRow();
-  if (lastRow < DATA_ROW) return [];
-  const lastCol = ws.getLastColumn();
-  return ws.getRange(DATA_ROW, 1, lastRow - DATA_ROW + 1, lastCol).getValues();
-}
-
-function generateId(ss, sheetName, prefix) {
-  const ws      = ss.getSheetByName(sheetName);
-  const lastRow = ws.getLastRow();
-  let maxNum    = 0;
-  if (lastRow >= DATA_ROW) {
-    const ids = ws.getRange(DATA_ROW, 1, lastRow - DATA_ROW + 1, 1).getValues();
-    ids.forEach(([id]) => {
-      if (id && String(id).startsWith(prefix + '-')) {
-        const n = parseInt(String(id).replace(prefix + '-', ''), 10);
-        if (!isNaN(n) && n > maxNum) maxNum = n;
-      }
-    });
-  }
-  return `${prefix}-${String(maxNum + 1).padStart(3, '0')}`;
-}
-
-function geocode(address) {
-  if (!address) return { lat: '', lng: '' };
-  try {
-    const response = Maps.newGeocoder().geocode(address);
-    const result   = response.results[0];
-    if (result) return { lat: result.geometry.location.lat, lng: result.geometry.location.lng };
-  } catch (e) { Logger.log('Geocode error: ' + e.message); }
-  return { lat: '', lng: '' };
-}
-
-function fmtDate(val) {
-  if (!val) return '';
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return String(val);
-  return Utilities.formatDate(d, 'Asia/Tokyo', 'yyyy-MM-dd');
-}
-
-function fmtDatetime(val) {
-  if (!val) return '';
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return String(val);
-  return Utilities.formatDate(d, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
-}
-
-
-/**
- * ============================================================
- * メール送信権限テスト用関数
- * Apps Scriptエディタからこの関数を手動実行して権限を承認してください
- * ============================================================
- */
-function testMailPermission() {
-  try {
-    MailApp.sendEmail({
-      to: NOTIFY_EMAILS,
-      subject: '【日報システム】メール送信テスト',
-      body: 'このメールが届いていれば、メール送信権限の設定は完了です。'
-    });
-    Logger.log('テストメール送信成功');
-    SpreadsheetApp.getUi().alert('✅ テストメールを送信しました。受信を確認してください。');
-  } catch (err) {
-    Logger.log('テストメール送信失敗: ' + err.message);
-    SpreadsheetApp.getUi().alert('❌ エラー: ' + err.message);
-  }
-}
-
-
-/**
- * ============================================================
- * ダッシュボード用API追加分
- * gas_api_v2.js の末尾に追記してください
- * ============================================================
- */
-
-// ── 単価設定 ──
-const UNIT_PRICE = {
-  '越谷': { '重度訪問介護': 3500, '居宅介護': 9000 },
-  '熊谷': { '重度訪問介護': 3350, '居宅介護': 8600 },
-};
-
-// デフォルト単価（サービス名が一致しない場合）
-const DEFAULT_PRICE = 3350;
-
-/**
- * 時間単価を取得
- */
-function getUnitPrice(jigyosho, service) {
-  const j = UNIT_PRICE[jigyosho];
-  if (!j) return DEFAULT_PRICE;
-  for (const key of Object.keys(j)) {
-    if ((service || '').includes(key)) return j[key];
-  }
-  return DEFAULT_PRICE;
-}
-
-// 案件オブジェクトから単価を取得（serviceType列を優先）
-function getUnitPriceFromAnken(anken) {
-  const service = anken.serviceType || anken.service || '';
-  return getUnitPrice(anken.jigyosho, service);
-}
-
-/**
- * 想定支援時間（文字列→数値）
- * 例: "120時間" → 120, "120h" → 120, "120" → 120
- */
-function parseHours(val) {
-  if (!val) return 0;
-  const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
-  return isNaN(n) ? 0 : n;
-}
-
-/**
- * 月次売上予想を計算（万円）
- * status: 対象ステータスの配列 例: ['サービス開始'] or ['サービス相談','調整中']
- */
-function calcSales(ankens, statuses) {
-  let koTotal = 0, kuTotal = 0;
-  ankens.forEach(a => {
-    if (!statuses.includes(a.status)) return;
-    const hours  = parseHours(a.hoursMonth);
-    const price  = getUnitPriceFromAnken(a);
-    const amount = hours * price / 10000; // 万円
-    if (a.jigyosho === '越谷') koTotal += amount;
-    else kuTotal += amount;
+function buildKyuChart(key) {
+  if(!dashData) return;
+  var k = dashData.kyushoku;
+  var oubo = k.ouboTrend.map(function(d){return d.count;});
+  var saiyo = oubo.map(function(v){return Math.round(v*0.27);});
+  var rate  = oubo.map(function(v,i){return v?Math.round(saiyo[i]/v*1000)/10:0;});
+  if(key==='越谷'){oubo=oubo.map(function(v){return Math.round(v*0.58);});saiyo=oubo.map(function(v){return Math.round(v*0.27);});}
+  if(key==='熊谷'){oubo=oubo.map(function(v){return Math.round(v*0.42);});saiyo=oubo.map(function(v){return Math.round(v*0.27);});}
+  if(kyuChart) kyuChart.destroy();
+  kyuChart = new Chart(document.getElementById('chart-kyu-trend'),{
+    type:'bar',
+    data:{labels:dashData.kyushoku.ouboTrend.map(function(d){return d.label;}),datasets:[
+      {label:'応募数',data:oubo,backgroundColor:GRAY,borderRadius:3,yAxisID:'y'},
+      {label:'採用数',data:saiyo,backgroundColor:PURPLE,borderRadius:3,yAxisID:'y'},
+      {label:'採用率',data:rate,type:'line',borderColor:AMBER,backgroundColor:'transparent',tension:0.3,pointRadius:3,yAxisID:'y2',borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},
+        y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor},position:'left'},
+        y2:{beginAtZero:true,position:'right',grid:{display:false},ticks:{font:{size:10},color:AMBER,callback:function(v){return v+'%'}}}}}
   });
-  return {
-    ko    : Math.round(koTotal * 10) / 10,
-    ku    : Math.round(kuTotal * 10) / 10,
-    total : Math.round((koTotal + kuTotal) * 10) / 10,
-  };
 }
 
-// 求職者マスターの行→オブジェクト変換
-function kyushokuMap(r) {
-  return {
-    id        : r[0],
-    name      : r[1],
-    kana      : r[2],
-    tel       : r[3],
-    email     : r[4],
-    address   : r[5],
-    jigyosho  : r[6],  // G列：希望拠点
-    kinmu     : r[7],  // H列：勤務区分
-    shikaku   : r[8],  // I列：資格
-    ouboDate  : fmtDate(r[9]),   // J列：応募日
-    noreachout: r[10], // K列：連絡不可
-    status    : r[11], // L列：ステータス
-    interviewAt: r[12],// M列：面接日時
-    tanto     : r[13], // N列：担当者
-    memo      : r[14], // O列：メモ
-    bikou     : r[15], // P列：備考
-    createdAt : fmtDate(r[16]),  // Q列：登録日時
-    updatedAt : fmtDate(r[17]),  // R列：更新日時
-  };
+function filterKyuTrend(el,key) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  buildKyuChart(key);
 }
 
-/**
- * GET ?action=dashboard
- * ダッシュボード用全データを一括取得
- */
-function getDashboard(params) {
-  const ss      = SpreadsheetApp.getActiveSpreadsheet();
-  const now     = new Date();
-  const year    = now.getFullYear();
-  const month   = now.getMonth(); // 0始まり
+function renderKyuStatus(key) {
+  if(!dashData) return;
+  var counts = dashData.kyushoku.statusCounts;
+  var list=['Indeed情報登録','応募','面接調整中','面接済み','採用','不採用','辞退'];
+  var colors={'Indeed情報登録':GRAY,'応募':BLUE,'面接調整中':AMBER,'面接済み':PURPLE,'採用':TEAL,'不採用':RED,'辞退':GRAY};
+  var total=0; list.forEach(function(s){total+=(counts[s]||0);}); if(!total)total=1;
+  var html=''; list.forEach(function(s){var w=Math.round((counts[s]||0)/total*100);html+='<div class="status-row"><div class="status-label" style="width:100px">'+s+'</div><div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+colors[s]+'"></div></div><div class="status-count">'+(counts[s]||0)+'件</div></div>';});
+  document.getElementById('kyushoku-status-grid').innerHTML=html;
+}
 
-  // ── マスターデータ取得 ──
-  const employees = readSheet(ss, SHEETS.EMPLOYEE, employeeMap).filter(e => e.active !== false);
-  const ankens    = readSheet(ss, SHEETS.ANKEN,    ankenMap);
-  const users     = readSheet(ss, SHEETS.USER,     userMap);
-
-  // ── 日報データ取得 ──
-  const nphRows = getDataRows(ss.getSheetByName(SHEETS.NPH));
-  const npdRows = getDataRows(ss.getSheetByName(SHEETS.NPD));
-
-  // ── 今月の範囲 ──
-  const monthStart = new Date(year, month, 1);
-  const monthEnd   = new Date(year, month + 1, 0);
-
-  // ── 1. サマリー ──
-  // 今月の日報ヘッダー
-  const thisMonthNph = nphRows.filter(r => {
-    const d = new Date(r[1]);
-    return d >= monthStart && d <= monthEnd;
-  });
-
-  // 今月の日報明細（種別=営業）
-  const thisMonthNphIds = new Set(thisMonthNph.map(r => r[0]));
-  const thisMonthEigyo  = npdRows.filter(r => r[2] === '営業' && thisMonthNphIds.has(r[1]));
-
-  // 事業所別営業回数
-  const eigyoByJigyo = { 越谷: 0, 熊谷: 0 };
-  thisMonthNph.forEach(r => {
-    const j = r[4];
-    if (eigyoByJigyo[j] !== undefined) eigyoByJigyo[j] += thisMonthEigyo.filter(e => {
-      const nph = nphRows.find(n => n[0] === e[1]);
-      return nph && nph[0] === r[0];
-    }).length;
-  });
-  // シンプルに事業所別件数を集計
-  const eigyoCountKo = thisMonthEigyo.filter(e => {
-    const nph = nphRows.find(n => n[0] === e[1]);
-    return nph && nph[4] === '越谷';
-  }).length;
-  const eigyoCountKu = thisMonthEigyo.filter(e => {
-    const nph = nphRows.find(n => n[0] === e[1]);
-    return nph && nph[4] === '熊谷';
-  }).length;
-
-  // 月次売上予想（サービス開始のみ）
-  const salesKaishi = calcSales(ankens, ['サービス開始']);
-
-  // パイプライン概算（サービス相談・調整中）
-  const pipeline = calcSales(ankens, ['サービス相談', '調整中']);
-
-  // 現在の利用者数（サービス開始中）
-  const activeUsers = ankens.filter(a => a.status === 'サービス開始');
-  const userCountKo = activeUsers.filter(a => a.jigyosho === '越谷').length;
-  const userCountKu = activeUsers.filter(a => a.jigyosho === '熊谷').length;
-
-  // ── 2. 案件ステータス別件数 ──
-  const statusList = ['サービス相談', 'サービス開始', '不成立', '契約終了'];
-  const statusCounts = {};
-  ['both', '越谷', '熊谷'].forEach(j => {
-    const filtered = j === 'both' ? ankens : ankens.filter(a => a.jigyosho === j);
-    statusCounts[j] = {};
-    statusList.forEach(s => {
-      statusCounts[j][s] = filtered.filter(a => a.status === s).length;
-    });
-  });
-
-  // ── 3. パイプライン明細 ──
-  const pipelineItems = ankens
-    .filter(a => ['サービス相談', '調整中'].includes(a.status))
-    .map(a => ({
-      name    : a.userName,
-      jigyosho: a.jigyosho,
-      service : a.service || '',
-      hours   : parseHours(a.hoursMonth),
-      status  : a.status,
-      amount  : Math.round(parseHours(a.hoursMonth) * getUnitPrice(a.jigyosho, a.service) / 10000 * 10) / 10,
-    }))
-    .sort((a, b) => b.amount - a.amount);
-
-  // ── 4. 利用者別売上 ──
-  const userSales = ankens
-    .filter(a => a.userId)
-    .map(a => ({
-      name    : a.userName,
-      jigyosho: a.jigyosho,
-      service : a.service || '',
-      status  : a.status,
-      amount  : Math.round(parseHours(a.hoursMonth) * getUnitPrice(a.jigyosho, a.service) / 10000 * 10) / 10,
-    }))
-    .sort((a, b) => b.amount - a.amount);
-
-  // ── 5. 営業回数推移（過去6ヶ月） ──
-  const trendMonthly = [];
-  for (let i = 5; i >= 0; i--) {
-    const d   = new Date(year, month - i, 1);
-    const end = new Date(year, month - i + 1, 0);
-    const label = (d.getMonth() + 1) + '月';
-    const nphInMonth = nphRows.filter(r => { const dd = new Date(r[1]); return dd >= d && dd <= end; });
-    const nphIds = new Set(nphInMonth.map(r => r[0]));
-    const eigyoInMonth = npdRows.filter(r => r[2] === '営業' && nphIds.has(r[1]));
-    const ko = eigyoInMonth.filter(e => { const n = nphRows.find(x => x[0] === e[1]); return n && n[4] === '越谷'; }).length;
-    const ku = eigyoInMonth.filter(e => { const n = nphRows.find(x => x[0] === e[1]); return n && n[4] === '熊谷'; }).length;
-    trendMonthly.push({ label, ko, ku });
+function renderIndeedList(list) {
+  var el = document.getElementById('indeed-list');
+  var countEl = document.getElementById('indeed-count');
+  if(!el) return;
+  if(!list || !list.length) {
+    el.innerHTML = '<div style="font-size:13px;color:#888;text-align:center;padding:12px">入力待ちの求職者はいません</div>';
+    if(countEl) countEl.textContent = '0件';
+    return;
   }
-
-  // ── 6. 担当者別営業回数（今月） ──
-  const staffEigyo = {};
-  employees.forEach(e => { staffEigyo[e.name] = { count: 0, jigyosho: e.jigyosho }; });
-  thisMonthNph.forEach(r => {
-    const staffName = r[3];
-    if (staffEigyo[staffName] !== undefined) {
-      const myEigyo = npdRows.filter(e => e[2] === '営業' && e[1] === r[0]);
-      staffEigyo[staffName].count += myEigyo.length;
-    }
+  if(countEl) countEl.textContent = list.length + '件';
+  var KYUSHOKU_URL = 'https://script.google.com/macros/s/AKfycbzY2zAawKaY4XpH6HoBtrgqZVzu0aOQtjUbf-90ZsZFQ4i-EGWGOSskBXm4qfWSTUQX/exec';
+  var html = '';
+  list.forEach(function(k) {
+    html += '<a href="' + KYUSHOKU_URL + '" target="_blank" style="text-decoration:none;display:block;margin-bottom:8px">' +
+      '<div style="background:#F9F9F9;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;border:0.5px solid #E8E8E8">' +
+        '<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👤</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (k.name||'氏名未入力') + '</div>' +
+          '<div style="font-size:11px;color:#888;margin-top:2px">' +
+            (k.jigyosho||'—') +
+            (k.ouboDate ? ' ／ ' + k.ouboDate : '') +
+            (k.tanto ? ' ／ ' + k.tanto : '') +
+          '</div>' +
+          (k.memo ? '<div style="font-size:11px;color:#888;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + k.memo + '</div>' : '') +
+        '</div>' +
+        '<div style="color:#ccc;font-size:18px;flex-shrink:0">›</div>' +
+      '</div>' +
+    '</a>';
   });
-  const staffRanking = Object.entries(staffEigyo)
-    .map(([name, v]) => ({ name, count: v.count, jigyosho: v.jigyosho }))
-    .sort((a, b) => b.count - a.count);
+  el.innerHTML = html;
+}
 
-  // ── 7. 利用者数の月次推移（過去6ヶ月） ──
-  const userTrend = [];
-  for (let i = 5; i >= 0; i--) {
-    const d     = new Date(year, month - i, 1);
-    const label = (d.getMonth() + 1) + '月';
-    // その月の時点でサービス開始中の利用者数
-    const ko = ankens.filter(a => {
-      if (a.jigyosho !== '越谷') return false;
-      const start = a.receivedAt ? new Date(a.receivedAt) : null;
-      const end   = a.completedAt ? new Date(a.completedAt) : null;
-      if (!start) return false;
-      return start <= d && (!end || end >= d) && a.status === 'サービス開始';
-    }).length;
-    const ku = ankens.filter(a => {
-      if (a.jigyosho !== '熊谷') return false;
-      const start = a.receivedAt ? new Date(a.receivedAt) : null;
-      const end   = a.completedAt ? new Date(a.completedAt) : null;
-      if (!start) return false;
-      return start <= d && (!end || end >= d) && a.status === 'サービス開始';
-    }).length;
-    userTrend.push({ label, ko, ku });
-  }
+function filterKyuStatus(el,key) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  renderKyuStatus(key);
+}
 
-  // ── 8. 日報提出状況（今月） ──
-  const nippouStatus = employees.map(e => {
-    // この従業員の全日報ヘッダーを取得
-    var empNph = nphRows.filter(function(r){ return r[3] === e.name; });
-    var thisMonthCount = empNph.filter(function(r){
-      var d = new Date(r[1]);
-      return d >= monthStart && d <= monthEnd;
-    }).length;
+function renderStatus(key) {
+  if(!dashData) return;
+  var d = dashData.statusCounts[key] || dashData.statusCounts['both'];
+  var list=['サービス相談','サービス開始','不成立','契約終了'];
+  var colors={'サービス相談':BLUE,'サービス開始':TEAL,'不成立':RED,'契約終了':GRAY};
+  var total=0; list.forEach(function(s){total+=(d[s]||0);}); if(!total)total=1;
+  var html=''; list.forEach(function(s){var w=Math.round((d[s]||0)/total*100);html+='<div class="status-row"><div class="status-label">'+s+'</div><div class="status-bar-wrap"><div class="status-bar" style="width:'+w+'%;background:'+colors[s]+'"></div></div><div class="status-count">'+(d[s]||0)+'件</div></div>';});
+  document.getElementById('status-grid').innerHTML=html;
+}
 
-    // 日報一覧（全期間・新しい順）タイムライン用
-    var reports = empNph.map(function(r){
-      var nphId = r[0];
-      var date  = fmtDate(r[1]);
-      var meisai = npdRows.filter(function(row){ return row[1] === nphId; });
-      var items  = meisai.map(function(row){
-        return { type: row[2], name: row[4], memo: row[5] || '' };
+function filterStatus(el,key) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  renderStatus(key);
+}
+
+function renderPipeline(items) {
+  var html='';
+  items.filter(function(p){return p.status==='サービス相談'||p.status==='調整中';}).forEach(function(p,i){
+    var bg=p.status==='サービス相談'?'background:#E6F1FB;color:#0C447C':'background:#FAEEDA;color:#633806';
+    html+='<div class="pipeline-item" onclick="openModal('+i+')">'+
+      '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+p.name+' 様</div><div style="font-size:11px;color:#888;margin-top:2px">'+p.jigyosho+' ／ '+(p.service||'重度訪問介護')+' ／ '+p.hours+'h</div></div>'+
+      '<div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:600;color:#1D9E75">'+p.amount+'万円</div><span class="pbadge" style="'+bg+'">'+p.status+'</span></div>'+
+    '</div>';
+  });
+  document.getElementById('pipeline-list').innerHTML = html || '<div style="font-size:13px;color:#ccc;text-align:center;padding:12px">調整中の案件はありません</div>';
+}
+
+function buildUserChart(jigyo) {
+  if(!dashData) return;
+  var all = dashData.userSales;
+  var data = jigyo==='all' ? all : all.filter(function(u){return u.jigyosho===jigyo;});
+  var h=Math.max(data.length*34+50,100); document.getElementById('user-wrap').style.height=h+'px';
+  if(userChart) userChart.destroy();
+  userChart=new Chart(document.getElementById('chart-users'),{type:'bar',
+    data:{labels:data.map(function(d){return d.name;}),datasets:[{data:data.map(function(d){return d.amount;}),backgroundColor:data.map(function(d){return d.jigyosho==='越谷'?TEAL:BLUE;}),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.raw+'万円';}}}},indexAxis:'y',
+      scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,callback:function(v){return v+'万';}}},y:{grid:{display:false},ticks:{font:{size:10},color:tickColor}}}}
+  });
+}
+
+function filterUser(el,jigyo) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  buildUserChart(jigyo);
+}
+
+function buildUserTrendChart(data) {
+  if(userTrendChart) userTrendChart.destroy();
+  userTrendChart=new Chart(document.getElementById('chart-user-trend'),{type:'line',
+    data:{labels:data.map(function(d){return d.label;}),datasets:[
+      {label:'越谷',data:data.map(function(d){return d.ko;}),borderColor:TEAL,backgroundColor:'rgba(29,158,117,0.1)',tension:0.3,fill:true,pointRadius:3},
+      {label:'熊谷',data:data.map(function(d){return d.ku;}),borderColor:BLUE,backgroundColor:'rgba(55,138,221,0.1)',tension:0.3,fill:true,pointRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:tickColor}},y:{beginAtZero:true,grid:{color:gridColor},ticks:{font:{size:10},color:tickColor,stepSize:2}}}}
+  });
+}
+
+function renderNippouStatus(data) {
+  var html='';
+  data.forEach(function(d){
+    html+='<div class="status-list-row"><div><div style="font-size:14px">'+d.name+'</div><div style="font-size:11px;color:#888">'+d.jigyosho+'</div></div><div class="nippou-count">'+d.count+'件</div></div>';
+  });
+  document.getElementById('nippou-status-list').innerHTML = html;
+}
+
+function buildStaffSelect(staffList) {
+  var sel = document.getElementById('staff-select');
+  sel.innerHTML = '<option value="all">全員</option>';
+  staffList.forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s.name;
+    opt.textContent = s.name + '（' + s.jigyosho + '）';
+    sel.appendChild(opt);
+  });
+}
+
+function filterNippouPeriod(el,period) {
+  el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
+  nippouPeriod = period;
+  var labels={month:'今月',week:'今週',last:'先週'};
+  document.getElementById('tl-label').textContent = '日報タイムライン（'+labels[period]+'）';
+  renderTimeline();
+}
+
+function renderTimeline() {
+  if(!dashData) return;
+  var staff = document.getElementById('staff-select').value;
+  var today = new Date();
+  var weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay()+1);
+  var lastStart = new Date(weekStart); lastStart.setDate(lastStart.getDate()-7);
+  var lastEnd   = new Date(weekStart); lastEnd.setDate(lastEnd.getDate()-1);
+  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  var nippouAll = [];
+  dashData.nippouStatus.forEach(function(s){
+    if(staff!=='all' && s.name!==staff) return;
+    if(s.reports) s.reports.forEach(function(r){
+      nippouAll.push({
+        staff: s.name, jigyosho: s.jigyosho,
+        date: r.date, items: r.items || [], bikou: r.bikou || ''
       });
-      var bikou = r[5] || '';
-      return { date: date, items: items, bikou: bikou };
-    }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
-
-    return { name: e.name, jigyosho: e.jigyosho, count: thisMonthCount, reports: reports };
-  }).sort(function(a,b){ return b.count - a.count; });
-
-  // ── 求職者データ ──
-  // 求職者マスターはデータ開始行が2行目（他シートは4行目）
-  const kyushokuList = readSheet(ss, SHEETS.KYUSHOKU, kyushokuMap, 2);
-
-  // 累計求職者数
-  const kyushokuTotal = kyushokuList.length;
-
-  // 事業所別求職者数
-  const kyushokuKo = kyushokuList.filter(k => k.jigyosho === '越谷' || k.jigyosho === '両拠点').length;
-  const kyushokuKu = kyushokuList.filter(k => k.jigyosho === '熊谷' || k.jigyosho === '両拠点').length;
-
-  // 今月の応募数（応募日が今月）
-  const thisMonthOubo = kyushokuList.filter(k => {
-    if (!k.ouboDate) return false;
-    const d = new Date(k.ouboDate);
-    return d.getFullYear() === year && d.getMonth() === month;
-  }).length;
-
-  // 今月の採用数
-  const thisMonthSaiyo = kyushokuList.filter(k => {
-    if (k.status !== '採用') return false;
-    const d = new Date(k.updatedAt || k.createdAt);
-    return d.getFullYear() === year && d.getMonth() === month;
-  }).length;
-
-  // ステータス別件数
-  const kyushokuStatusList = ['Indeed情報登録', '応募', '面接調整中', '面接済み', '採用', '不採用', '辞退'];
-  const kyushokuStatusCounts = {};
-  kyushokuStatusList.forEach(s => {
-    kyushokuStatusCounts[s] = kyushokuList.filter(k => k.status === s).length;
-  });
-
-  // 月次応募数推移（過去6ヶ月）
-  const ouboTrend = [];
-  for (let i = 5; i >= 0; i--) {
-    const d   = new Date(year, month - i, 1);
-    const end = new Date(year, month - i + 1, 0);
-    const label = (d.getMonth() + 1) + '月';
-    const count = kyushokuList.filter(k => {
-      if (!k.ouboDate) return false;
-      const dd = new Date(k.ouboDate);
-      return dd >= d && dd <= end;
-    }).length;
-    ouboTrend.push({ label, count });
-  }
-
-  // Indeed情報登録ステータスの求職者一覧
-  const indeedList = kyushokuList
-    .filter(k => k.status === 'Indeed情報登録')
-    .map(k => ({
-      id       : k.id,
-      name     : k.name,
-      jigyosho : k.jigyosho,
-      ouboDate : k.ouboDate,
-      tanto    : k.tanto,
-      memo     : k.memo,
-    }));
-
-  return {
-    summary: {
-      eigyo    : { ko: eigyoCountKo, ku: eigyoCountKu, total: eigyoCountKo + eigyoCountKu },
-      sales    : salesKaishi,
-      users    : { ko: userCountKo, ku: userCountKu, total: userCountKo + userCountKu },
-      pipeline : pipeline,
-    },
-    statusCounts,
-    pipelineItems,
-    userSales,
-    trendMonthly,
-    staffRanking,
-    userTrend,
-    nippouStatus,
-    kyushoku: {
-      total         : kyushokuTotal,
-      ko            : kyushokuKo,
-      ku            : kyushokuKu,
-      thisMonthOubo,
-      thisMonthSaiyo,
-      statusCounts  : kyushokuStatusCounts,
-      ouboTrend,
-      indeedList,
-    },
-    month: (month + 1) + '月',
-    year,
-  };
-}
-
-/**
- * デバッグ用：案件ごとの単価計算内容をログ出力
- */
-function debugSalesCalc() {
-  const ss     = SpreadsheetApp.getActiveSpreadsheet();
-  const ankens = readSheet(ss, SHEETS.ANKEN, ankenMap);
-  const results = [];
-
-  ankens.forEach(a => {
-    const hours       = parseHours(a.hoursMonth);
-    const serviceType = a.serviceType || '(空欄)';
-    const price       = getUnitPriceFromAnken(a);
-    const amount      = Math.round(hours * price / 10000 * 10) / 10;
-    results.push(`${a.userName} / ${a.jigyosho} / サービス種別:${serviceType} / ${hours}h × ${price}円 = ${amount}万円 [${a.status}]`);
-  });
-
-  Logger.log(results.join('\n'));
-  SpreadsheetApp.getUi().alert('計算内容:\n\n' + results.join('\n'));
-}
-
-/**
- * デバッグ用：案件マスターの列インデックスを確認
- * R列が正しく読めているか確認するために実行してください
- */
-function debugColumnIndex() {
-  const ss  = SpreadsheetApp.getActiveSpreadsheet();
-  const ws  = ss.getSheetByName(SHEETS.ANKEN);
-  const lastCol = ws.getLastColumn();
-
-  // 2行目（ヘッダー行）の全列名を取得
-  const headers = ws.getRange(2, 1, 1, lastCol).getValues()[0];
-  const headerInfo = headers.map((h, i) => {
-    const colLetter = columnToLetter(i + 1);
-    return `${colLetter}列(index ${i}): ${h}`;
-  }).join('\n');
-
-  // DATA_ROW行目の1件目のデータも確認
-  const firstRow = ws.getRange(DATA_ROW, 1, 1, lastCol).getValues()[0];
-  const rowInfo = firstRow.map((v, i) => {
-    const colLetter = columnToLetter(i + 1);
-    return `${colLetter}列(index ${i}): ${v}`;
-  }).join('\n');
-
-  const msg = '【ヘッダー行】\n' + headerInfo + '\n\n【1件目データ】\n' + rowInfo;
-  Logger.log(msg);
-  SpreadsheetApp.getUi().alert(msg);
-}
-
-// 列番号→アルファベット変換
-function columnToLetter(col) {
-  let letter = '';
-  while (col > 0) {
-    const mod = (col - 1) % 26;
-    letter = String.fromCharCode(65 + mod) + letter;
-    col = Math.floor((col - 1) / 26);
-  }
-  return letter;
-}
-
-// ============================================================
-// 毎週金曜日夕方に求人出稿が「必要」の案件をメール送信
-// トリガー設定：週ベースのタイマー → 金曜日 → 午後5時〜6時
-// ============================================================
-function sendWeeklyJobPostingReport() {
-  const ss      = SpreadsheetApp.getActiveSpreadsheet();
-  const ankens  = readSheet(ss, SHEETS.ANKEN, ankenMap);
-  const now     = new Date();
-  const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy年MM月dd日');
-
-  // 利用者マスターを取得（住所の参照用）
-  const users = readSheet(ss, SHEETS.USER, userMap);
-  const userMap2 = {};
-  users.forEach(u => { userMap2[u.id] = u; });
-
-  // 求人出稿「必要」の案件を全件抽出（ステータス問わず）
-  const targets = ankens.filter(a => a.jobPosting === '必要');
-
-  if (targets.length === 0) {
-    Logger.log('求人出稿対象案件なし');
-    return;
-  }
-
-  // メール本文を作成
-  const lines = targets.map((a, i) => {
-    const user    = userMap2[a.userId] || {};
-    const address = user.address || a.address || '—';
-    return [
-      `【${i + 1}】${a.userName} 様`,
-      `  事業所    ：${a.jigyosho    || '—'}`,
-      `  住所      ：${address}`,
-      `  最寄り駅  ：${a.nearStation || '—'}`,
-      `  日勤/夜勤 ：${a.shiftType   || '—'}`,
-      `  医療的ケア：${a.medicalCare  || '—'}`,
-      `  ステータス：${a.status       || '—'}`,
-    ].join('\n');
-  }).join('\n\n');
-
-  const subject = `【求人出稿リスト】${dateStr} 時点（${targets.length}件）`;
-  const body = `${dateStr} 時点の求人出稿が必要な案件は以下の通りです。\n\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    lines + '\n' +
-    `━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `合計：${targets.length}件\n` +
-    `（越谷：${targets.filter(a => a.jigyosho === '越谷').length}件 ／ 熊谷：${targets.filter(a => a.jigyosho === '熊谷').length}件）`;
-
-  MailApp.sendEmail({
-    to      : NOTIFY_EMAILS,
-    subject : subject,
-    body    : body,
-  });
-
-  Logger.log('求人出稿レポート送信完了: ' + targets.length + '件');
-}
-
-/**
- * google.script.run から呼び出されるダッシュボードデータ取得関数
- * dashboard.html から直接呼び出す
- */
-function getDashboardData() {
-  const result  = getDashboard({});
-  const jsonStr = JSON.stringify(result);
-  // Base64エンコードしてdocument.writeの構文エラーを回避
-  return Utilities.base64Encode(jsonStr, Utilities.Charset.UTF_8);
-}
-
-/**
- * デバッグ用：dashboardのHTML内容とデータ埋め込みを確認
- * Apps Scriptエディタから手動実行してください
- */
-function debugDashboard() {
-  const html       = HtmlService.createHtmlOutputFromFile('dashboard');
-  const htmlContent = html.getContent();
-  const hasPlaceholder = htmlContent.indexOf('DASHBOARD_DATA_PLACEHOLDER') >= 0;
-  Logger.log('プレースホルダーあり: ' + hasPlaceholder);
-  Logger.log('HTMLの長さ: ' + htmlContent.length);
-  Logger.log('先頭300文字: ' + htmlContent.substring(0, 300));
-}
-
-/**
- * デバッグ用：求職者マスターのステータス一覧を確認
- * Apps Scriptエディタから手動実行してください
- */
-function debugKyushokuStatus() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var ws = ss.getSheetByName(SHEETS.KYUSHOKU);
-  var lastRow = ws.getLastRow();
-
-  // 2行目から10行分のL列を直接取得
-  var startR = 2;
-  var rowCount = Math.min(10, lastRow - startR + 1);
-  var rawData = ws.getRange(startR, 12, rowCount, 1).getValues();
-  var rawResult = [];
-  rawData.forEach(function(row, i) {
-    var val = row[0];
-    var codes = [];
-    String(val).split('').forEach(function(c){ codes.push(c.charCodeAt(0)); });
-    rawResult.push('行' + (i + startR) + ': [' + val + '] 文字コード:' + codes.join(','));
-  });
-  Logger.log('=== L列（2行目から）===');
-  Logger.log(rawResult.join('\n'));
-
-  // readSheetで取得した場合も確認
-  var kyushokuList = readSheet(ss, SHEETS.KYUSHOKU, kyushokuMap, 2);
-  Logger.log('readSheet件数: ' + kyushokuList.length);
-  Logger.log('Indeed情報登録 件数: ' + kyushokuList.filter(function(k){return k.status === 'Indeed情報登録';}).length);
-  Logger.log('ステータス一覧: ' + kyushokuList.slice(0,5).map(function(k){return '['+k.status+']';}).join(', '));
-}
-
-
-// ============================================================
-// 週次日報サマリメール
-// ============================================================
-
-/**
- * 指定期間の日報サマリを組み立ててメール送信する共通関数
- * @param {Date} startDate  集計開始日（00:00:00）
- * @param {Date} endDate    集計終了日（23:59:59）
- * @param {string} subject  メール件名
- */
-function sendNippouSummary(startDate, endDate, subject) {
-  var ss       = SpreadsheetApp.getActiveSpreadsheet();
-  var nphRows  = getDataRows(ss.getSheetByName(SHEETS.NPH));
-  var npdRows  = getDataRows(ss.getSheetByName(SHEETS.NPD));
-
-  // 期間内のヘッダーを抽出
-  var targetNph = nphRows.filter(function(r) {
-    var d = new Date(r[1]);
-    return d >= startDate && d <= endDate;
-  });
-
-  if (targetNph.length === 0) {
-    Logger.log('対象期間の日報なし: ' + subject);
-    return;
-  }
-
-  // 担当者ごとにまとめる
-  var byStaff = {};
-  targetNph.forEach(function(r) {
-    var staff    = r[3] || '不明';
-    var jigyosho = r[4] || '';
-    var date     = Utilities.formatDate(new Date(r[1]), 'Asia/Tokyo', 'M/d(E)');
-    var nphId    = r[0];
-    var bikou    = r[5] || '';
-
-    // この日報の営業明細
-    var eigyoItems = npdRows.filter(function(row) {
-      return row[1] === nphId && row[2] === '営業';
     });
+  });
 
-    if (!byStaff[staff]) {
-      byStaff[staff] = { jigyosho: jigyosho, days: [] };
+  var filtered = nippouAll.filter(function(n){
+    var d = new Date(n.date);
+    if(nippouPeriod==='month') return d >= monthStart;
+    if(nippouPeriod==='week')  return d >= weekStart;
+    if(nippouPeriod==='last')  return d >= lastStart && d <= lastEnd;
+    return true;
+  }).sort(function(a,b){return b.date.localeCompare(a.date);});
+
+  // タップ用にキャッシュ
+  window._tlData = filtered;
+
+  var wrap = document.getElementById('tl-wrap');
+  if(!filtered.length){
+    wrap.innerHTML='<div style="padding:16px;font-size:13px;color:#888">日報がありません</div>';
+    return;
+  }
+
+  var html='<div class="tl-line"></div>';
+  filtered.forEach(function(n,i){
+    // 営業件数・案件更新件数を集計
+    var eigyoCount  = n.items.filter(function(it){return it.type==='営業';}).length;
+    var ankenCount  = n.items.filter(function(it){return it.type==='案件';}).length;
+    // メモ冒頭（最初の営業アイテムのmemo）
+    var firstMemo = '';
+    for(var j=0;j<n.items.length;j++){
+      if(n.items[j].memo){firstMemo=n.items[j].memo;break;}
     }
-    byStaff[staff].days.push({ date: date, eigyo: eigyoItems, bikou: bikou });
+
+    var badges='';
+    if(eigyoCount>0) badges+='<span class="tl-badge tl-badge-e">営業 '+eigyoCount+'件</span>';
+    if(ankenCount>0) badges+='<span class="tl-badge tl-badge-a">案件 '+ankenCount+'件</span>';
+
+    html+='<div class="tl-item" onclick="openTlModal('+i+')">'+
+      '<div class="tl-dot"></div>'+
+      '<div class="tl-head">'+
+        '<div>'+
+          '<div class="tl-date" style="color:#1A1A1A;font-weight:600">'+n.date+(staff==='all'?' &nbsp;<span style="color:#1D9E75">'+n.staff+' ('+n.jigyosho+')</span>':'')+'</div>'+
+        '</div>'+
+        '<div class="tl-badges">'+badges+'</div>'+
+      '</div>'+
+      (firstMemo?'<div class="tl-preview">'+firstMemo+'</div>':'')+
+    '</div>';
   });
+  wrap.innerHTML = html;
+}
 
-  // メール本文を組み立て
-  var lines = [];
-  lines.push('お疲れ様です。');
-  lines.push('週次日報サマリをお送りします。');
-  lines.push('');
-  lines.push('集計期間：' +
-    Utilities.formatDate(startDate, 'Asia/Tokyo', 'yyyy/M/d') + ' 〜 ' +
-    Utilities.formatDate(endDate,   'Asia/Tokyo', 'yyyy/M/d'));
-  lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+function openTlModal(i) {
+  var n = (window._tlData||[])[i];
+  if(!n) return;
 
-  // 担当者ごとに出力
-  Object.keys(byStaff).sort().forEach(function(staff) {
-    var data = byStaff[staff];
-    lines.push('');
-    lines.push('■ ' + staff + '（' + data.jigyosho + '）　計' + data.days.length + '日');
+  var eigyoItems = n.items.filter(function(it){return it.type==='営業';});
+  var ankenItems = n.items.filter(function(it){return it.type==='案件';});
 
-    data.days.sort(function(a, b) { return a.date.localeCompare(b.date); });
-    data.days.forEach(function(day) {
-      lines.push('  ' + day.date);
-      if (day.eigyo.length > 0) {
-        day.eigyo.forEach(function(e) {
-          var name = e[4] || '';
-          var memo = e[5] || '';
-          lines.push('    ▸ ' + name + (memo ? '：' + memo : ''));
-        });
-      } else {
-        lines.push('    （営業記録なし）');
-      }
-      if (day.bikou) {
-        lines.push('    【備考】' + day.bikou);
-      }
+  var body='';
+
+  // 営業記録
+  if(eigyoItems.length){
+    body+='<div><div class="sec-label">営業記録</div>';
+    eigyoItems.forEach(function(it){
+      body+='<div style="border-left:3px solid #1D9E75;padding:6px 0 6px 12px;margin-bottom:8px">'+
+        '<div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:3px">'+it.name+'</div>'+
+        (it.memo?'<div style="font-size:12px;color:#555;line-height:1.7">'+it.memo+'</div>':'')+
+      '</div>';
     });
-  });
+    body+='</div>';
+  }
 
-  lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('');
-  lines.push('※ このメールは自動送信です。');
+  // 案件更新
+  if(ankenItems.length){
+    body+='<div><div class="sec-label">案件更新</div>';
+    ankenItems.forEach(function(it){
+      body+='<div style="border-left:3px solid #378ADD;padding:6px 0 6px 12px;margin-bottom:8px">'+
+        '<div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:3px">'+it.name+'</div>'+
+        (it.memo?'<div style="font-size:12px;color:#555;line-height:1.7">'+it.memo+'</div>':'')+
+      '</div>';
+    });
+    body+='</div>';
+  }
 
-  MailApp.sendEmail({
-    to      : NOTIFY_EMAILS,
-    subject : subject,
-    body    : lines.join('\n'),
-  });
+  // 備考・申し送り
+  if(n.bikou){
+    body+='<div><div class="sec-label">備考・申し送り</div>'+
+      '<div style="background:#F9F9F9;border-radius:8px;padding:10px 12px;font-size:13px;color:#555;line-height:1.7">'+n.bikou+'</div>'+
+    '</div>';
+  }
 
-  Logger.log('週次サマリ送信完了: ' + subject);
+  if(!body) body='<div style="font-size:13px;color:#888">詳細情報がありません</div>';
+
+  document.getElementById('modal-title').textContent = n.date + '　' + n.staff;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-bg').classList.add('open');
 }
 
-/**
- * 金曜17:30に実行：今週（月〜金）の日報サマリ
- * トリガー設定：毎週金曜 17:00〜18:00
- */
-function sendWeeklyNippouFriday() {
-  var now   = new Date();
-  // 今週月曜00:00
-  var day   = now.getDay(); // 0=日, 1=月 ... 5=金
-  var diff  = day - 1;     // 月曜までの差分
-  var monday = new Date(now);
-  monday.setDate(now.getDate() - diff);
-  monday.setHours(0, 0, 0, 0);
-
-  // 今週金曜23:59
-  var friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-  friday.setHours(23, 59, 59, 0);
-
-  var ym = Utilities.formatDate(monday, 'Asia/Tokyo', 'M/d');
-  var yf = Utilities.formatDate(friday, 'Asia/Tokyo', 'M/d');
-  var subject = '【日報サマリ】今週の営業記録（' + ym + '〜' + yf + '）';
-
-  sendNippouSummary(monday, friday, subject);
+var pipelineCache=[];
+function openModal(i) {
+  if(!dashData) return;
+  var p = dashData.pipelineItems[i];
+  if(!p) return;
+  document.getElementById('modal-title').textContent = p.name + ' 様';
+  document.getElementById('modal-body').innerHTML =
+    '<div><div class="sec-label">案件詳細</div><div class="detail-grid">'+
+    '<div class="detail-field"><div class="detail-field-label">事業所</div><div class="detail-field-value">'+(p.jigyosho||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">ステータス</div><div class="detail-field-value">'+(p.status||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">サービス種別</div><div class="detail-field-value">'+(p.service||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">支援時間/月</div><div class="detail-field-value">'+(p.hours||'—')+'h</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">最寄り駅</div><div class="detail-field-value">'+(p.nearStation||'—')+'</div></div>'+
+    '<div class="detail-field"><div class="detail-field-label">日勤/夜勤</div><div class="detail-field-value">'+(p.shiftType||'—')+'</div></div>'+
+    '<div class="detail-field" style="grid-column:1/-1"><div class="detail-field-label">医療的ケア</div><div class="detail-field-value">'+(p.medicalCare||'—')+'</div></div>'+
+    '<div class="detail-field" style="grid-column:1/-1"><div class="detail-field-label">緊急連絡先</div><div class="detail-field-value">'+(p.emergencyName||'—')+(p.emergencyTel?' ／ '+p.emergencyTel:'')+'</div></div>'+
+    '</div></div>'+
+    '<div><div class="sec-label">過去の営業記録</div><div style="font-size:12px;color:#888">読み込み中...</div></div>';
+  document.getElementById('modal-bg').classList.add('open');
 }
 
-/**
- * 月曜8:30に実行：先週（月〜日）の日報サマリ
- * トリガー設定：毎週月曜 8:00〜9:00
- */
-function sendWeeklyNippouMonday() {
-  var now    = new Date();
-  // 先週月曜00:00
-  var lastMonday = new Date(now);
-  lastMonday.setDate(now.getDate() - 7 - (now.getDay() - 1));
-  lastMonday.setHours(0, 0, 0, 0);
-
-  // 先週日曜23:59
-  var lastSunday = new Date(lastMonday);
-  lastSunday.setDate(lastMonday.getDate() + 6);
-  lastSunday.setHours(23, 59, 59, 0);
-
-  var ym = Utilities.formatDate(lastMonday, 'Asia/Tokyo', 'M/d');
-  var ys = Utilities.formatDate(lastSunday, 'Asia/Tokyo', 'M/d');
-  var subject = '【日報サマリ】先週の営業記録（' + ym + '〜' + ys + '）';
-
-  sendNippouSummary(lastMonday, lastSunday, subject);
+function closeModal(e) {
+  if(!e || e.target===document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').classList.remove('open');
 }
+
+loadDashboard();
+</script>
+</body>
+</html>
