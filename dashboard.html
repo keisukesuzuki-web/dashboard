@@ -319,6 +319,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
         <button class="fb active" onclick="filterNippouPeriod(this,'month')">今月</button>
         <button class="fb" onclick="filterNippouPeriod(this,'week')">今週</button>
         <button class="fb" onclick="filterNippouPeriod(this,'last')">先週</button>
+        <button class="fb" onclick="filterNippouPeriod(this,'lastmonth')">先月</button>
       </div>
       <select id="staff-select" onchange="renderTimeline()" style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid #E0E0E0;background:#fff;font-family:inherit;font-size:14px;color:#1A1A1A;-webkit-appearance:none">
         <option value="all">全員</option>
@@ -331,7 +332,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
       </div>
     </div>
     <div class="card">
-      <div class="sec-label" style="margin-bottom:8px">今月の提出状況</div>
+      <div class="sec-label" id="nippou-status-label" style="margin-bottom:8px">日報の提出状況（今月）</div>
       <div id="nippou-status-list"></div>
     </div>
   </div>
@@ -467,7 +468,7 @@ function renderAll(d) {
   renderPipeline(d.pipelineItems);
   buildUserChart('all');
   buildUserTrendChart(d.userTrend);
-  renderNippouStatus(d.nippouStatus);
+  renderNippouStatusForPeriod(nippouPeriod);
   buildStaffSelect(d.staffRanking);
   renderTimeline();
   renderIndeedList(d.kyushoku.indeedList);
@@ -658,9 +659,39 @@ function buildUserTrendChart(data) {
   });
 }
 
-function renderNippouStatus(data) {
+// ── 期間（今月/今週/先週/先月）の開始日・終了日を算出する共通関数 ──
+function getPeriodRange(period) {
+  var today = new Date();
+  var weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay()+1);
+  var lastStart = new Date(weekStart); lastStart.setDate(lastStart.getDate()-7);
+  var lastEnd   = new Date(weekStart); lastEnd.setDate(lastEnd.getDate()-1);
+  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  var lastMonthStart = new Date(today.getFullYear(), today.getMonth()-1, 1);
+  var lastMonthEnd   = new Date(today.getFullYear(), today.getMonth(), 0);
+
+  if (period === 'month')     return { start: monthStart,     end: null };
+  if (period === 'week')      return { start: weekStart,      end: null };
+  if (period === 'last')      return { start: lastStart,      end: lastEnd };
+  if (period === 'lastmonth') return { start: lastMonthStart, end: lastMonthEnd };
+  return { start: null, end: null };
+}
+
+function renderNippouStatusForPeriod(period) {
+  if(!dashData) return;
+  var range = getPeriodRange(period);
+  var list = dashData.nippouStatus.map(function(d){
+    var count = 0;
+    (d.reports||[]).forEach(function(r){
+      var dt = new Date(r.date);
+      if(range.start && dt < range.start) return;
+      if(range.end   && dt > range.end)   return;
+      count++;
+    });
+    return { name: d.name, jigyosho: d.jigyosho, count: count };
+  }).sort(function(a,b){ return b.count - a.count; });
+
   var html='';
-  data.forEach(function(d){
+  list.forEach(function(d){
     html+='<div class="status-list-row"><div><div style="font-size:14px">'+d.name+'</div><div style="font-size:11px;color:#888">'+d.jigyosho+'</div></div><div class="nippou-count">'+d.count+'件</div></div>';
   });
   document.getElementById('nippou-status-list').innerHTML = html;
@@ -680,19 +711,17 @@ function buildStaffSelect(staffList) {
 function filterNippouPeriod(el,period) {
   el.parentNode.querySelectorAll('.fb').forEach(function(b){b.classList.remove('active');}); el.classList.add('active');
   nippouPeriod = period;
-  var labels={month:'今月',week:'今週',last:'先週'};
+  var labels={month:'今月',week:'今週',last:'先週',lastmonth:'先月'};
   document.getElementById('tl-label').textContent = '日報タイムライン（'+labels[period]+'）';
+  document.getElementById('nippou-status-label').textContent = '日報の提出状況（'+labels[period]+'）';
   renderTimeline();
+  renderNippouStatusForPeriod(period);
 }
 
 function renderTimeline() {
   if(!dashData) return;
   var staff = document.getElementById('staff-select').value;
-  var today = new Date();
-  var weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay()+1);
-  var lastStart = new Date(weekStart); lastStart.setDate(lastStart.getDate()-7);
-  var lastEnd   = new Date(weekStart); lastEnd.setDate(lastEnd.getDate()-1);
-  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  var range = getPeriodRange(nippouPeriod);
 
   var nippouAll = [];
   dashData.nippouStatus.forEach(function(s){
@@ -707,9 +736,8 @@ function renderTimeline() {
 
   var filtered = nippouAll.filter(function(n){
     var d = new Date(n.date);
-    if(nippouPeriod==='month') return d >= monthStart;
-    if(nippouPeriod==='week')  return d >= weekStart;
-    if(nippouPeriod==='last')  return d >= lastStart && d <= lastEnd;
+    if(range.start && d < range.start) return false;
+    if(range.end   && d > range.end)   return false;
     return true;
   }).sort(function(a,b){return b.date.localeCompare(a.date);});
 
